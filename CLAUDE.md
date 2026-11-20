@@ -7,9 +7,10 @@
 
 ## 0. いまの状態（セットアップ時点）
 - Next.js **16.4.6** / React 19.3 / Tailwind CSS 4.3（Turbopack の CSS ローダー方式。`postcss.config` はない）/ `cacheComponents: true`。
-- Firebase は Emulator 用の仮プロジェクト ID `demo-onebouldering` で設定済み。本物のプロジェクトは未接続。
-- Cabinet Grotesk のフォントファイルが未配置のため、英字見出しは暫定で **Inter** を使用中（`src/app/fonts.ts` の TODO）。
-- Firestore Emulator には **Java（JDK 11 以上）** が必要。未導入。
+- Firebase の本番プロジェクトは **`one-bouldering`**（`.firebaserc` の `default` / `production`）。既存アプリの `one-bouldering-ranking` とは別のプロジェクトで、データは後で移行する。
+- ローカル開発は仮プロジェクト ID `demo-onebouldering` と Emulator を使う（`npm run emulators`。本物のデータには触れない）。
+- Java は **Temurin JDK 21** を導入済み。Windows では JDK の内部通信が `%TEMP%` で失敗するため、`scripts/emulators.mjs` が `-Djdk.net.unixdomain.tmpdir` を自動で設定する。
+- 英字見出しは **Cabinet Grotesk**（Fontshare、ITF Free Font License。Medium / Bold / Extrabold の woff2 を `src/app/fonts/` に配置）。
 - 加盟ジムのロゴ（`public/gym-logos/`）はファイル名が日本語のまま。会場ページを作るときに英数字の名前へ変える。
 
 ---

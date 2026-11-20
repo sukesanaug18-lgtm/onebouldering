@@ -21,4 +21,4 @@ npm run dev                        # http://localhost:3000
 | `npm run format` | Prettier で整形 |
 | `npm test` | 単体テスト（Vitest） |
 | `npm run test:e2e` | 画面の通しテスト（Playwright。初回は `npx playwright install chromium`） |
-| `npm run emulators` | Firebase Emulator（Firestore には Java 11 以上が必要） |
+| `npm run emulators` | Firebase Emulator（Auth / Firestore。UI は http://127.0.0.1:4000） |

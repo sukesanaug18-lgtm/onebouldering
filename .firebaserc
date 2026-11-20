@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "demo-onebouldering"
+    "default": "one-bouldering",
+    "production": "one-bouldering",
+    "emulator": "demo-onebouldering"
   }
 }

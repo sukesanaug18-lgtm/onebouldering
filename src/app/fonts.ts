@@ -1,4 +1,5 @@
-import { Inter, Noto_Sans_JP } from "next/font/google";
+import localFont from "next/font/local";
+import { Noto_Sans_JP } from "next/font/google";
 
 /** Japanese body text (CLAUDE.md 6-7). */
 export const notoSansJp = Noto_Sans_JP({
@@ -9,13 +10,15 @@ export const notoSansJp = Noto_Sans_JP({
 });
 
 /**
- * Display face for English headings, numbers, buttons and navigation.
- * TODO: Replace with Cabinet Grotesk via next/font/local once the font files
- * are placed in src/app/fonts/ (e.g. CabinetGrotesk-Variable.woff2).
- * Inter is a temporary stand-in that matches the current site.
+ * Cabinet Grotesk: English headings, numbers, buttons and navigation.
+ * Source: Fontshare (ITF Free Font License, see fonts/CabinetGrotesk-LICENSE.txt).
  */
-export const displayFace = Inter({
-  subsets: ["latin"],
+export const displayFace = localFont({
+  src: [
+    { path: "./fonts/CabinetGrotesk-Medium.woff2", weight: "500", style: "normal" },
+    { path: "./fonts/CabinetGrotesk-Bold.woff2", weight: "700", style: "normal" },
+    { path: "./fonts/CabinetGrotesk-Extrabold.woff2", weight: "800", style: "normal" },
+  ],
   display: "swap",
   variable: "--font-display-face",
 });
