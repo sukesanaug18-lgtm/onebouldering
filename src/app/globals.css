@@ -89,3 +89,10 @@ h3 {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Pages with a fixed join button above the phone tabs: keep the footer visible. */
+@media (width < 64rem) {
+  body:has([data-sticky-cta]) footer {
+    padding-bottom: calc(10.5rem + env(safe-area-inset-bottom));
+  }
+}

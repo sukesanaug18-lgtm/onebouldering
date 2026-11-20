@@ -27,7 +27,7 @@ export const EVENTS: EventInfo[] = [
     key: "tryout",
     name: "Division Tryout",
     kind: "クラス認定",
-    summary: "指定の10課題のうち6課題を完登すると、そのDivision（クラス）に認定されます。",
+    summary: "参加ジムで指定の6課題に挑戦。完登した数で、自分のDivision（クラス）が決まります。",
     period: "通年・参加ジムで受験",
     href: "/tryout/about",
   },
@@ -37,7 +37,7 @@ export const EVENTS: EventInfo[] = [
     kind: "全国ランキング",
     summary: "全国の参加ジムのランキング課題と大会のポイントを合計して、年間の順位を競います。",
     period: "2026年4月〜2027年3月",
-    href: "/ranking",
+    href: "/ranking/about",
   },
 ];
 
@@ -56,7 +56,7 @@ export const JOURNEY = [
   {
     title: "Ranking に参加",
     text: "ジムのランキング課題に挑戦して、スコアを提出します。",
-    href: "/ranking",
+    href: "/ranking/about",
   },
   {
     title: "TNFC 予選・本戦",

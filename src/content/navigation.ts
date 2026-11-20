@@ -18,7 +18,7 @@ export const MENU_GROUPS: { title: string; items: NavItem[] }[] = [
     items: [
       { href: "/tnfc", label: "THE NORTH FACE CUP" },
       { href: "/tryout/about", label: "Division Tryout" },
-      { href: "/ranking", label: "ONE bouldering Ranking" },
+      { href: "/ranking/about", label: "ONE bouldering Ranking" },
     ],
   },
   {
