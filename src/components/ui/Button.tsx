@@ -19,6 +19,8 @@ type CommonProps = {
   size?: Size;
   className?: string;
   children: ReactNode;
+  /** Text buttons show a ChevronRight; set false to hide it. */
+  arrow?: boolean;
 };
 
 type LinkButtonProps = CommonProps & { href: string } & Omit<
@@ -56,6 +58,7 @@ export function Button(props: ButtonProps) {
   if (props.href !== undefined) {
     const {
       href,
+      arrow: _arrow,
       variant: _variant,
       size: _size,
       className: _className,
@@ -72,7 +75,7 @@ export function Button(props: ButtonProps) {
             <span className="sr-only">（新しいタブで開きます）</span>
           </>
         ) : (
-          variant === "text" && <Chevron />
+          variant === "text" && props.arrow !== false && <Chevron />
         )}
       </>
     );
@@ -91,6 +94,7 @@ export function Button(props: ButtonProps) {
   }
 
   const {
+    arrow: _arrow,
     variant: _variant,
     size: _size,
     className: _className,
@@ -101,7 +105,7 @@ export function Button(props: ButtonProps) {
   return (
     <button type={type} className={classes} {...rest}>
       {children}
-      {variant === "text" && <Chevron />}
+      {variant === "text" && props.arrow !== false && <Chevron />}
     </button>
   );
 }
