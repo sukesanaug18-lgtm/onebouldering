@@ -8,10 +8,11 @@ import { cn } from "@/lib/cn";
  * - primary:   black fill, white text. One per screen.
  * - secondary: white with a 1px border.
  * - text:      text + ChevronRight.
+ * - inverse / glass: primary / secondary for dark backgrounds (hero).
  * Height is 44px or more. Pass `href` to render a link; external URLs open in a
  * new tab and get the external-link icon (6-8).
  */
-type Variant = "primary" | "secondary" | "text";
+type Variant = "primary" | "secondary" | "text" | "inverse" | "glass";
 type Size = "md" | "lg";
 
 type CommonProps = {
@@ -41,12 +42,17 @@ const variants: Record<Variant, string> = {
   secondary:
     "rounded-full border border-line bg-white/70 text-text backdrop-blur-md hover:border-gray-300 hover:bg-white",
   text: "rounded-md text-text hover:text-text-2",
+  inverse: "rounded-full bg-white text-text hover:bg-white/85 focus-visible:outline-white",
+  glass:
+    "rounded-full border border-white/25 bg-white/10 text-white backdrop-blur-md hover:border-white/40 hover:bg-white/15 focus-visible:outline-white",
 };
 
 const sizes: Record<Variant, Record<Size, string>> = {
   primary: { md: "px-6 text-[15px]", lg: "min-h-13 px-8 text-base" },
   secondary: { md: "px-6 text-[15px]", lg: "min-h-13 px-8 text-base" },
   text: { md: "px-1 text-[15px]", lg: "px-1 text-base" },
+  inverse: { md: "px-6 text-[15px]", lg: "min-h-13 px-8 text-base" },
+  glass: { md: "px-6 text-[15px]", lg: "min-h-13 px-8 text-base" },
 };
 
 const isExternal = (href: string) => /^https?:\/\//.test(href);
