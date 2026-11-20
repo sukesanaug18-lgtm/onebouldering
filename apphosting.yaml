@@ -1,0 +1,14 @@
+# Firebase App Hosting settings.
+# https://firebase.google.com/docs/app-hosting/configure
+runConfig:
+  minInstances: 0
+  maxInstances: 4
+
+env:
+  # Temporary: set to the *.hosted.app URL after the first rollout,
+  # then to the production domain once it is decided.
+  - variable: NEXT_PUBLIC_SITE_URL
+    value: https://REPLACE-WITH-BACKEND.hosted.app
+    availability:
+      - BUILD
+      - RUNTIME
