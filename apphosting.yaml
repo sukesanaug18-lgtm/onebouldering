@@ -12,3 +12,10 @@ env:
     availability:
       - BUILD
       - RUNTIME
+
+  # Signs athlete session cookies. Stored in Cloud Secret Manager, never in the repo.
+  # Create once:  npx firebase apphosting:secrets:set session-secret
+  - variable: SESSION_SECRET
+    secret: session-secret
+    availability:
+      - RUNTIME

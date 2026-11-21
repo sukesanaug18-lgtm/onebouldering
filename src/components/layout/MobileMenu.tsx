@@ -4,14 +4,22 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { ExternalLink, Menu, X } from "lucide-react";
-import { useCallback, useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react";
 import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/Button";
 import { GYM_NAV, MENU_GROUPS, isActivePath } from "@/content/navigation";
 import { cn } from "@/lib/cn";
 
 /** Menu button + full-width panel for phones and tablets (< lg). */
-export function MobileMenu() {
+export function MobileMenu({ account }: { account: ReactNode }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const reduce = useReducedMotion();
@@ -120,13 +128,13 @@ export function MobileMenu() {
                     </section>
                   ))}
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <Button href="/login" variant="secondary" onClick={() => setOpen(false)}>
-                      ログイン
-                    </Button>
-                    <Button href="/register" onClick={() => setOpen(false)}>
-                      選手登録
-                    </Button>
+                  {/* Login state (server-rendered); close the menu when a link inside is used. */}
+                  <div
+                    onClick={(e) => {
+                      if ((e.target as HTMLElement).closest("a")) setOpen(false);
+                    }}
+                  >
+                    {account}
                   </div>
 
                   <ul className="mt-8">

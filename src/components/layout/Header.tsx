@@ -1,4 +1,5 @@
-import { Button } from "@/components/ui/Button";
+import { Suspense } from "react";
+import { HeaderAccount } from "./HeaderAccount";
 import { Logo } from "./Logo";
 import { MainNav } from "./MainNav";
 import { MobileMenu } from "./MobileMenu";
@@ -6,7 +7,7 @@ import { MobileMenu } from "./MobileMenu";
 /**
  * Site header: sticky, frosted white with a 1px bottom line (CLAUDE.md 6-2).
  * Desktop shows the main links; smaller screens use the menu button.
- * Logged-in state (my page link) is added in the auth step.
+ * The login state streams in behind Suspense so the rest of the header stays static.
  */
 export function Header() {
   return (
@@ -15,15 +16,18 @@ export function Header() {
         <Logo priority />
         <MainNav />
         <div className="flex items-center gap-2">
-          <div className="hidden items-center gap-1 lg:flex">
-            <Button href="/login" variant="text" arrow={false} className="px-3 text-[14px]">
-              ログイン
-            </Button>
-            <Button href="/register" variant="secondary" className="px-5 text-[14px]">
-              選手登録
-            </Button>
+          <div className="hidden min-w-[11rem] items-center justify-end gap-1 lg:flex">
+            <Suspense fallback={null}>
+              <HeaderAccount variant="desktop" />
+            </Suspense>
           </div>
-          <MobileMenu />
+          <MobileMenu
+            account={
+              <Suspense fallback={<div className="h-11" />}>
+                <HeaderAccount variant="menu" />
+              </Suspense>
+            }
+          />
         </div>
       </div>
     </header>

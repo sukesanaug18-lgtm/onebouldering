@@ -5,6 +5,7 @@ import { initializeApp } from "firebase-admin/app";
 import { getFirestore, type WriteBatch } from "firebase-admin/firestore";
 import { GYMS } from "../src/content/gyms.ts";
 import { aggregateRankingData } from "../src/domain/ranking.ts";
+import { hashPin } from "../src/server/crypto.ts";
 
 const PROJECT_ID = process.env.FIREBASE_PROJECT_ID ?? "demo-onebouldering";
 process.env.FIRESTORE_EMULATOR_HOST ??= "127.0.0.1:8080";
@@ -89,6 +90,18 @@ for (let i = 0; i < 160; i++) {
   }
 }
 users.push({ id: "19999", name: "サンプル選手（未確定）", division: "UNDECIDED" });
+// Demo login for local testing only (Emulator). License No. 10000 / PIN 0000.
+users.push({
+  id: "10000",
+  name: "デモ選手",
+  furigana: "デモ センシュ",
+  gender: "男性",
+  division: "Men‘s Division 3",
+  divisionStatus: "confirmed",
+  email: "demo@example.test",
+  birthDate: "1995-06-15",
+  pinHash: await hashPin("0000"),
+});
 
 const ranking = aggregateRankingData({
   users,
