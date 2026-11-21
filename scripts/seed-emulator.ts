@@ -34,10 +34,22 @@ function rand() {
 }
 const pick = <T>(list: readonly T[]) => list[Math.floor(rand() * list.length)];
 
-const venues = GYMS.map((g) => {
+// Programs per venue: most run both; every 7th is Ranking only, every 11th Tryout only,
+// so each /entry path can be tried locally.
+const venues = GYMS.map((g, i) => {
   const file = g.logo.split("/").pop()!.replace(".png", "");
   const prefix = file.slice(0, 2);
-  return { id: file.slice(3), name: g.name, region: REGION_BY_PREFIX[prefix] ?? "未定" };
+  return {
+    id: file.slice(3),
+    name: g.name,
+    region: REGION_BY_PREFIX[prefix] ?? "未定",
+    programs: {
+      hasTryout: i % 7 !== 6,
+      tryoutPeriod: "2026/4/1〜2027/3/31",
+      hasRanking: i % 11 !== 10,
+      rankingPeriod: "2026/6/1〜2026/12/31",
+    },
+  };
 });
 
 const DIVISIONS = [
