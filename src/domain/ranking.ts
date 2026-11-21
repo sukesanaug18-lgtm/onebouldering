@@ -78,11 +78,17 @@ export function aggregateRankingData(params: {
 
   for (const d of participantData) {
     if (!inSeason(d)) continue;
-    if (str(d["承認ステータス"] || d.status) !== "Approved") continue;
+    // Approved records count their total. A record sent again after approval is Pending,
+    // but keeps counting the points the gym already approved (approvedTotalPoints).
+    const approved = str(d["承認ステータス"] || d.status) === "Approved";
+    const keptPoints = Number(d.approvedTotalPoints) || 0;
+    if (!approved && keptPoints <= 0) continue;
     const uid = str(d["One_Bouldering_ID"] || d.oneBoulderingId || d.userId);
     const gymId = str(d["会場_ジムID"] || d.venueGymId || d.venueId);
     if (!uid || !gymId) continue;
-    const score = parseInt(String(d["合計ポイント"] ?? d.totalPoints ?? 0), 10) || 0;
+    const score = approved
+      ? parseInt(String(d["合計ポイント"] ?? d.totalPoints ?? 0), 10) || 0
+      : keptPoints;
     const p = getPlayer(uid);
     if (score > (p.gymScores.get(gymId) ?? -1)) p.gymScores.set(gymId, score);
   }

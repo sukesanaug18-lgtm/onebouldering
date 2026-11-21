@@ -17,7 +17,9 @@ export const metadata: Metadata = { title: "Division Tryout", robots: { index: f
 
 async function Tryout({ searchParams }: { searchParams: PageProps<"/tryout">["searchParams"] }) {
   const venueId = param((await searchParams).venue);
-  const user = await requireUser(venueId ? `/tryout?venue=${encodeURIComponent(venueId)}` : "/tryout");
+  const user = await requireUser(
+    venueId ? `/tryout?venue=${encodeURIComponent(venueId)}` : "/tryout",
+  );
   const venue = await getVenue(venueId);
 
   if (!venue) {

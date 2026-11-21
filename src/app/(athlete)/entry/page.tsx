@@ -55,7 +55,9 @@ async function Entry({ searchParams }: { searchParams: PageProps<"/entry">["sear
         <div className="space-y-4">
           <p className="text-[15px] text-text-2">
             {user.name} さん（
-            {user.division === UNDECIDED_DIVISION ? "Division 未確定" : shortDivision(user.division)}
+            {user.division === UNDECIDED_DIVISION
+              ? "Division 未確定"
+              : shortDivision(user.division)}
             ）。参加するプログラムを選んでください。
           </p>
           {decision.options.map((o) => (
@@ -123,8 +125,8 @@ function NeedsTryout() {
     <Card accent="tryout" padding="lg" className="bg-white">
       <h2 className="text-lg font-bold">先に Division Tryout を受けてください</h2>
       <p className="mt-2 text-[15px] text-text-2">
-        Divisionが未確定のため、Ranking のスコアはまだ提出できません。
-        このジムでは Tryout を開催していないので、開催しているジムで受けてください。
+        Divisionが未確定のため、Ranking のスコアはまだ提出できません。 このジムでは Tryout
+        を開催していないので、開催しているジムで受けてください。
       </p>
       <div className="mt-6 flex flex-wrap gap-3">
         <Button href="/schedule">Tryout を開催しているジム</Button>

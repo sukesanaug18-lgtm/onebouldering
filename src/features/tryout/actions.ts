@@ -125,7 +125,11 @@ export async function submitTryout(_prev: TryoutState, formData: FormData): Prom
         }
       }
 
-      tx.update(userRef, { division: result.newDivision, divisionStatus: "confirmed", updatedAt: now });
+      tx.update(userRef, {
+        division: result.newDivision,
+        divisionStatus: "confirmed",
+        updatedAt: now,
+      });
       tx.set(db.collection("tryout_logs").doc(logId), {
         id: logId,
         seasonId,

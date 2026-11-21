@@ -17,7 +17,7 @@ import {
 } from "@/domain/tryout";
 import { submitTryout } from "../actions";
 import type { TryoutState } from "../schemas";
-import { ChoiceChip } from "./ChoiceChip";
+import { ChoiceChip } from "@/components/ui/ChoiceChip";
 import { TryoutResultPanel } from "./TryoutResult";
 
 type Props = {
