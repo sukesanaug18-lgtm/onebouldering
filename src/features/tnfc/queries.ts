@@ -9,6 +9,7 @@ import {
   type VenueChecklistKey,
 } from "@/domain/tnfc";
 import { DEFAULT_FINALS_CUTOFF, type ScoredResult, type SyncMember } from "@/domain/tnfc-results";
+import { isFinalsRound, type CancellationRow, type QualifierResult } from "@/domain/tnfc-finals";
 import { adminDb } from "@/server/firebase-admin";
 import { ROUND_STATUS, type RoundStatus } from "./status";
 
@@ -49,6 +50,7 @@ export type AdminRound = {
   resultsImportedAt: string;
   resultCount: number;
   finalistCount: number;
+  promotionsAppliedAt: string;
   updatedAt: string;
   updatedBy: string;
 };
@@ -87,6 +89,7 @@ function toRound(id: string, d: FirebaseFirestore.DocumentData): AdminRound {
     resultsImportedAt: text(d.resultsImportedAt),
     resultCount: int(d.resultCount),
     finalistCount: int(d.finalistCount),
+    promotionsAppliedAt: text(d.promotionsAppliedAt),
     updatedAt: text(d.updatedAt),
     updatedBy: text(d.updatedBy),
   };
@@ -183,7 +186,8 @@ export async function getRoundWithMembers(roundId: string) {
 export async function nextRoundDefaults(seasonId: string) {
   const rounds = await listRounds(seasonId);
   return {
-    roundNumber: Math.max(0, ...rounds.map((r) => r.roundNumber)) + 1,
+    roundNumber:
+      Math.max(0, ...rounds.filter((r) => !isFinalsRound(r)).map((r) => r.roundNumber)) + 1,
     previousFinalBibNo: Math.max(0, ...rounds.map((r) => r.lastBibNo ?? 0)),
   };
 }
@@ -233,4 +237,61 @@ export async function getSyncMembers(): Promise<SyncMember[]> {
       };
     })
     .sort((a, b) => a.id.localeCompare(b.id, "ja", { numeric: true }));
+}
+
+/** Results of this season's qualifier rounds, for the finals list (diagram B-6, 1.3). */
+export async function getSeasonQualifierResults(seasonId: string): Promise<QualifierResult[]> {
+  const rounds = (await listRounds(seasonId)).filter((r) => !isFinalsRound(r));
+  const byId = new Map(rounds.map((r) => [r.id, r]));
+  if (byId.size === 0) return [];
+  const snap = await adminDb().collection("tnfc_results").where("seasonId", "==", seasonId).get();
+  return snap.docs
+    .filter((s) => byId.has(text(s.data().roundId)))
+    .map((s) => {
+      const d = s.data();
+      const round = byId.get(text(d.roundId))!;
+      return {
+        id: s.id,
+        roundId: round.id,
+        roundNumber: round.roundNumber,
+        venueName: round.venueName,
+        userId: text(d.userId),
+        name: text(d.userName),
+        division: canonicalDivision(text(d.division) || UNDECIDED_DIVISION),
+        rank: int(d.rank),
+        qualified: Boolean(d.qualifiedForFinals),
+        declined: d.status === "cancelled_finals",
+      };
+    });
+}
+
+/** The season's finals round, or null before the office creates it. */
+export const getFinalsRound = (seasonId: string) => getRound(`tnfc${seasonId}_finals`);
+
+/** The refund / cancellation-fee ledger for the season, newest first. */
+export async function getCancellations(
+  seasonId: string,
+): Promise<(CancellationRow & { id: string })[]> {
+  const snap = await adminDb()
+    .collection("tnfc_cancellations")
+    .where("seasonId", "==", seasonId)
+    .get();
+  return snap.docs
+    .map((s) => {
+      const d = s.data();
+      return {
+        id: s.id,
+        processedAt: text(d.processedAt),
+        roundName: text(d.roundName),
+        userId: text(d.userId),
+        userName: text(d.userName),
+        division: canonicalDivision(text(d.division) || UNDECIDED_DIVISION),
+        zeusOrderNo: text(d.zeusOrderNo),
+        cancelType: text(d.cancelType),
+        amount: int(d.amount),
+        contactChannel: text(d.contactChannel),
+        note: text(d.note),
+      };
+    })
+    .sort((a, b) => b.processedAt.localeCompare(a.processedAt));
 }

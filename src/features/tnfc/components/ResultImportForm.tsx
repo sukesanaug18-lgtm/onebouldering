@@ -30,11 +30,14 @@ export function ResultImportForm({
   defaultCutoff,
   defaultCutoffs,
   imported,
+  finals = false,
 }: {
   roundId: string;
   defaultCutoff: number;
   defaultCutoffs: Record<string, number>;
   imported: boolean;
+  /** The finals round: no finals line (promotions are decided on the finals page). */
+  finals?: boolean;
 }) {
   const [state, action, pending] = useActionState<ResultImportState, FormData>(importResults, {});
   const [csv, setCsv] = useState("");
@@ -45,7 +48,7 @@ export function ResultImportForm({
   const [fileError, setFileError] = useState("");
 
   const preview = state.applied ? undefined : state.preview;
-  const line = Math.max(0, Math.floor(Number(cutoff) || 0));
+  const line = finals ? 0 : Math.max(0, Math.floor(Number(cutoff) || 0));
   const lines = useMemo(
     () =>
       Object.fromEntries(
@@ -116,7 +119,7 @@ export function ResultImportForm({
           />
         </div>
         <div className="flex flex-wrap items-end gap-4">
-          <div>
+          <div hidden={finals}>
             <label htmlFor="r-cutoff" className="text-sm font-bold">
               本戦通過ライン（各カテゴリーの上位）
             </label>
@@ -171,7 +174,7 @@ export function ResultImportForm({
             </div>
           )}
 
-          <div>
+          <div hidden={finals}>
             <h3 className="font-bold">カテゴリーごとの本戦出場者</h3>
             <p className="mt-1 text-sm text-text-2">
               カテゴリーごとに通過ラインを変えるときは、右の欄に入れてください（空欄なら上の{line}
@@ -214,7 +217,7 @@ export function ResultImportForm({
                   <th className="py-2 pr-3 text-right font-bold">順位</th>
                   <th className="py-2 pr-3 font-bold">氏名</th>
                   <th className="py-2 pr-3 font-bold">ID</th>
-                  <th className="py-2 pr-3 font-bold">本戦</th>
+                  {!finals && <th className="py-2 pr-3 font-bold">本戦</th>}
                   <th className="py-2 text-right font-bold">付与pt</th>
                 </tr>
               </thead>
@@ -225,7 +228,7 @@ export function ResultImportForm({
                     <td className="py-2 pr-3 text-right tabular-nums">{r.rank}</td>
                     <td className="py-2 pr-3">{r.name}</td>
                     <td className="py-2 pr-3 text-text-3 tabular-nums">{r.userId}</td>
-                    <td className="py-2 pr-3">{r.qualified ? <b>出場</b> : ""}</td>
+                    {!finals && <td className="py-2 pr-3">{r.qualified ? <b>出場</b> : ""}</td>}
                     <td className="py-2 text-right tabular-nums">{r.points.toLocaleString()}</td>
                   </tr>
                 ))}
@@ -240,7 +243,9 @@ export function ResultImportForm({
               onClick={() => {
                 const msg = imported
                   ? "この大会のリザルトとポイントを、今回の内容で置き換えます。よろしいですか？"
-                  : `${scored.length}人のリザルトを確定し、本戦出場者 ${scored.filter((r) => r.qualified).length}人とRanking ポイントを反映します。よろしいですか？`;
+                  : finals
+                    ? `${scored.length}人のリザルトを確定し、Ranking ポイントを反映します。よろしいですか？`
+                    : `${scored.length}人のリザルトを確定し、本戦出場者 ${scored.filter((r) => r.qualified).length}人とRanking ポイントを反映します。よろしいですか？`;
                 if (window.confirm(msg)) send("apply");
               }}
             >

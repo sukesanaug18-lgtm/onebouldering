@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Download } from "lucide-react";
 import { Suspense } from "react";
 import { divisionName } from "@/domain/division";
+import { isFinalsRound } from "@/domain/tnfc-finals";
 import { categorySummary, finalistsNewsText } from "@/domain/tnfc-results";
 import { shortDate } from "@/features/mypage/components/MySection";
 import { Block, PageSkeleton } from "@/features/tnfc/components/Parts";
@@ -11,7 +12,7 @@ import { CopyButton } from "@/features/tnfc/components/TnfcForms";
 import { getRound, getRoundResults } from "@/features/tnfc/queries";
 import { requireAdmin } from "@/server/admin-session";
 
-export const metadata: Metadata = { title: "TNFC リザルト（予選後）" };
+export const metadata: Metadata = { title: "TNFC リザルト" };
 
 const downloadClass =
   "inline-flex min-h-11 items-center gap-1.5 rounded-full border border-line bg-white px-5 text-sm font-bold hover:border-gray-300";
@@ -27,18 +28,23 @@ async function Results({ params }: { params: PageProps<"/admin/tnfc/[id]/results
   const imported = results.length > 0;
   const summary = categorySummary(results);
   const finalists = results.filter((r) => r.qualified);
+  const finals = isFinalsRound(round);
 
   return (
     <div className="space-y-8">
       <Block
-        title="リザルトの取り込み（1.2.1）"
-        description="TNFC Control で確定したリザルト（順位・ID・氏名・カテゴリー）を読み込み、本戦出場者を決めて Ranking の公認大会ポイントを付けます。取り込み直すと、この大会の結果とポイントは置き換わります。"
+        title={finals ? "本戦リザルトの取り込み（1.4）" : "リザルトの取り込み（1.2.1）"}
+        description={
+          finals
+            ? "TNFC Control で確定した本戦のリザルトを読み込み、Ranking の公認大会ポイントを付けます。Division 昇格は「本戦」のページで行います。"
+            : "TNFC Control で確定したリザルト（順位・ID・氏名・カテゴリー）を読み込み、本戦出場者を決めて Ranking の公認大会ポイントを付けます。取り込み直すと、この大会の結果とポイントは置き換わります。"
+        }
       >
         {imported && (
           <p className="mb-4 text-sm text-text-2">
-            確定済み：{results.length}人・本戦 {finalists.length}人（
+            確定済み：{results.length}人{!finals && `・本戦 ${finalists.length}人`}（
             {shortDate(round.resultsImportedAt)}
-            、通過ライン 上位{round.finalsCutoff}位）
+            {!finals && `、通過ライン 上位${round.finalsCutoff}位`}）
           </p>
         )}
         <ResultImportForm
@@ -46,6 +52,7 @@ async function Results({ params }: { params: PageProps<"/admin/tnfc/[id]/results
           defaultCutoff={round.finalsCutoff}
           defaultCutoffs={round.finalsCutoffByCategory}
           imported={imported}
+          finals={finals}
         />
       </Block>
 
@@ -72,10 +79,12 @@ async function Results({ params }: { params: PageProps<"/admin/tnfc/[id]/results
                 <Download className="size-4" aria-hidden />
                 全会員（会員シート用）
               </a>
-              <CopyButton
-                text={finalistsNewsText(round, results)}
-                label="本戦出場者のお知らせ文をコピー"
-              />
+              {!finals && (
+                <CopyButton
+                  text={finalistsNewsText(round, results)}
+                  label="本戦出場者のお知らせ文をコピー"
+                />
+              )}
             </div>
           </Block>
 

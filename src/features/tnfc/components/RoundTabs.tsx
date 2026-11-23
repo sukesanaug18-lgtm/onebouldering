@@ -9,7 +9,8 @@ const tabs = (base: string) => [
   { href: `${base}/entries`, label: "エントリー" },
   { href: `${base}/checks`, label: "締切前チェック" },
   { href: `${base}/bibs`, label: "ゼッケン・CSV" },
-  { href: `${base}/results`, label: "リザルト（予選後）" },
+  { href: `${base}/results`, label: "リザルト" },
+  { href: `${base}/ops`, label: "キャンセル・会場変更" },
 ];
 
 /** The steps of diagrams B-4 (before) and B-5 (after the qualifier) for one round. */

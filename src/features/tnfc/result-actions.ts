@@ -124,7 +124,11 @@ export async function importResults(
           categoryParticipants: r.categoryCount,
           rank: r.rank,
           scoreSummary: r.score,
-          qualifiedForFinals: r.qualified,
+          // A player moved up after a finalist declined stays a finalist.
+          qualifiedForFinals:
+            before?.status !== "cancelled_finals" &&
+            (r.qualified || before?.promotedToFinals === true),
+          ...(before?.promotedToFinals ? { promotedToFinals: true } : {}),
           rankingPointsAwarded: r.points,
           // A finalist who declined stays declined when the list is imported again.
           status: before?.status === "cancelled_finals" ? "cancelled_finals" : "active",
@@ -184,7 +188,9 @@ export async function importResults(
     updateTag("ranking");
     revalidatePath(`/admin/tnfc/${round.id}`, "layout");
     const notes = [
-      `${results.length}人のリザルトを確定し、本戦出場者${finalists}人を決めて、Ranking ポイントを付与しました。`,
+      round.roundNumber >= 90
+        ? `${results.length}人の本戦リザルトを確定し、Ranking ポイントを付与しました。Division 昇格は「本戦」のページで行います。`
+        : `${results.length}人のリザルトを確定し、本戦出場者${finalists}人を決めて、Ranking ポイントを付与しました。`,
       stale.length > 0 ? `前回の取り込みにいて今回いない${stale.length}人の結果は消しました。` : "",
       parsed.unknownIds.length > 0
         ? `会員にいないライセンスNoが${parsed.unknownIds.length}件ありました（結果は保存しましたが、ランキングには出ません）。`

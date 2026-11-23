@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { Suspense } from "react";
 import { Card } from "@/components/ui/Card";
+import { isFinalsRound } from "@/domain/tnfc-finals";
 import { CreateRoundForm } from "@/features/tnfc/components/TnfcForms";
 import { listRounds, nextRoundDefaults, ROUND_STATUS } from "@/features/tnfc/queries";
 import { listAdminVenues } from "@/features/venue/queries";
@@ -22,6 +23,32 @@ async function RoundList() {
   ]);
   return (
     <div className="space-y-8">
+      <div className="grid gap-3 sm:grid-cols-2">
+        {[
+          {
+            href: "/admin/tnfc/finals",
+            title: "本戦",
+            text: "本戦出場者・辞退と繰り上げ・本戦エントリー・Division 昇格",
+          },
+          {
+            href: "/admin/tnfc/cancellations",
+            title: "キャンセル台帳",
+            text: "コンビニ返金・キャンセル料の一覧と CSV",
+          },
+        ].map((c) => (
+          <Link
+            key={c.href}
+            href={c.href}
+            className="flex min-h-14 items-center gap-3 rounded-2xl border border-line bg-white px-4 py-3 hover:bg-bg-subtle/60"
+          >
+            <span className="min-w-0 flex-1">
+              <span className="block font-bold">{c.title}</span>
+              <span className="block text-xs text-text-3">{c.text}</span>
+            </span>
+            <ChevronRight className="size-4 shrink-0 text-text-3" aria-hidden />
+          </Link>
+        ))}
+      </div>
       {rounds.length === 0 ? (
         <p className="rounded-2xl border border-line bg-white p-6 text-sm text-text-2">
           今シーズンの予選はまだありません。下のフォームから追加してください。
@@ -35,7 +62,7 @@ async function RoundList() {
                 className="flex min-h-14 flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 hover:bg-bg-subtle/60"
               >
                 <span className="font-display text-sm font-bold text-text-3">
-                  ROUND{r.roundNumber}
+                  {isFinalsRound(r) ? "本戦" : `ROUND${r.roundNumber}`}
                 </span>
                 <span className="min-w-0 flex-1 basis-48">
                   <span className="block truncate font-bold">{r.venueName}</span>
