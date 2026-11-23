@@ -1,4 +1,5 @@
 import "server-only";
+import { connection } from "next/server";
 import { cacheLife, cacheTag } from "next/cache";
 import { parseRankingCache, type RankingCacheData } from "@/domain/ranking";
 import { adminDb } from "@/server/firebase-admin";
@@ -54,6 +55,8 @@ async function loadVenues(): Promise<Venue[]> {
  * Returns null when there is no data yet or Firestore cannot be reached.
  */
 export async function getRanking(seasonId: string): Promise<RankingCacheData | null> {
+  // Read at request time, never while building (the build has no data and must not bake it in).
+  await connection();
   try {
     return await loadRanking(seasonId);
   } catch (err) {
@@ -64,6 +67,8 @@ export async function getRanking(seasonId: string): Promise<RankingCacheData | n
 
 /** Venue names and regions for the gym / region tabs. */
 export async function getVenues(): Promise<Venue[]> {
+  // Read at request time, never while building (the build has no data and must not bake it in).
+  await connection();
   try {
     return await loadVenues();
   } catch (err) {

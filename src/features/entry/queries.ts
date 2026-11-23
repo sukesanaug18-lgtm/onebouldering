@@ -1,4 +1,5 @@
 import "server-only";
+import { connection } from "next/server";
 import { cacheLife, cacheTag } from "next/cache";
 import { resolveVenuePrograms, type VenuePrograms } from "@/domain/entry";
 import { isLatLng, type LatLng } from "@/domain/venue-pass";
@@ -42,6 +43,8 @@ async function loadVenue(id: string): Promise<VenueDetail | null> {
 
 /** A participating gym with its programs, or null if unknown / hidden / unreachable. */
 export async function getVenue(id: string | undefined): Promise<VenueDetail | null> {
+  // Read at request time, never while building (the build has no data and must not bake it in).
+  await connection();
   if (!id || !VENUE_ID.test(id)) return null;
   try {
     return await loadVenue(id);

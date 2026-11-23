@@ -1,4 +1,5 @@
 import "server-only";
+import { connection } from "next/server";
 import { cacheLife, cacheTag } from "next/cache";
 import type { EventKey } from "@/components/ui/Badge";
 import { adminDb } from "@/server/firebase-admin";
@@ -34,6 +35,8 @@ function toPoster(event: EventKey, s: Stored | undefined): Poster | null {
 
 /** The poster for an event page (uploaded one, else the default, else none). */
 export async function getEventPoster(event: EventKey): Promise<Poster | null> {
+  // Read at request time, never while building (the build has no data and must not bake it in).
+  await connection();
   try {
     return toPoster(event, (await loadPosterSettings())[event]);
   } catch (err) {

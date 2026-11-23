@@ -1,4 +1,5 @@
 import "server-only";
+import { firebaseApiKey } from "./firebase-config";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
@@ -21,7 +22,7 @@ function authBaseUrl(): string {
 }
 
 function apiKey(): string {
-  const key = process.env.FIREBASE_API_KEY;
+  const key = firebaseApiKey();
   if (key) return key;
   if (process.env.FIREBASE_AUTH_EMULATOR_HOST) return "demo-api-key";
   throw new Error("FIREBASE_API_KEY is missing.");

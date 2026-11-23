@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { EventCards } from "@/features/home/components/EventCards";
 import { Hero } from "@/features/home/components/Hero";
 import { Journey } from "@/features/home/components/Journey";
@@ -32,7 +33,9 @@ export default function Home() {
       <Journey />
       <Upcoming items={SAMPLE_UPCOMING} />
       <RankingTop groups={SAMPLE_RANKING} />
-      <LatestNews />
+      <Suspense fallback={<NewsList />}>
+        <LatestNews />
+      </Suspense>
       <Partners sponsors={SAMPLE_SPONSORS} gyms={GYMS} />
     </main>
   );

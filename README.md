@@ -3,6 +3,10 @@
 THE NORTH FACE CUP / Division Tryout / ONE bouldering Ranking をひとつにまとめた公式サイト。
 設計とルールは [CLAUDE.md](./CLAUDE.md) を参照。
 
+## 公開（Firebase App Hosting）
+
+手順は [docs/deploy.md](docs/deploy.md)。GitHub の `main` に push すると自動でサイトが更新される。
+
 ## はじめかた
 
 ```bash

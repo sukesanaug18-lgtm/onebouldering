@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/Button";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import type { NewsItem } from "@/content/home-sample";
 
-/** Latest 3 news (CLAUDE.md 5-6). */
-export function NewsList({ items }: { items: NewsItem[] }) {
+/** Latest 3 news (CLAUDE.md 5-6). Without items it shows placeholder rows (while loading). */
+export function NewsList({ items }: { items?: NewsItem[] }) {
   return (
     <Section aria-labelledby="news-title">
       <SectionHeading
@@ -21,9 +21,15 @@ export function NewsList({ items }: { items: NewsItem[] }) {
         }
       />
       <FadeIn className="mt-8">
-        {items.length === 0 && <p className="text-text-2">まだお知らせはありません。</p>}
+        {items?.length === 0 && <p className="text-text-2">まだお知らせはありません。</p>}
         <ul className="divide-y divide-line border-y border-line empty:hidden">
-          {items.map((item) => (
+          {!items &&
+            [0, 1, 2].map((i) => (
+              <li key={i} aria-hidden className="py-5">
+                <span className="block h-6 w-2/3 animate-pulse rounded bg-bg-subtle" />
+              </li>
+            ))}
+          {items?.map((item) => (
             <li key={item.title}>
               <Link
                 href={item.href}

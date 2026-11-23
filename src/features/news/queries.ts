@@ -1,4 +1,5 @@
 import "server-only";
+import { connection } from "next/server";
 import { cacheLife, cacheTag } from "next/cache";
 import { isNewsVisible, newsExcerpt, sortNews, todayJst } from "@/domain/news";
 import { adminDb } from "@/server/firebase-admin";
@@ -64,16 +65,23 @@ export async function getNewsForEdit(id: string): Promise<NewsArticle | null> {
 
 /** Articles the public can see, pinned first. */
 export async function getPublishedNews(): Promise<NewsArticle[]> {
-  "use cache";
-  cacheLife("hours");
-  cacheTag("news");
+  // Read at request time, never while building (the build has no data and must not bake it in).
+  await connection();
   try {
-    const today = todayJst();
-    return (await listAllNews()).filter((a) => isNewsVisible(a, today));
+    return await loadPublishedNews();
   } catch (err) {
     console.error("[news] failed to read news_articles", err);
     return [];
   }
+}
+
+// Throws on errors so a failed read is never cached.
+async function loadPublishedNews(): Promise<NewsArticle[]> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("news");
+  const today = todayJst();
+  return (await listAllNews()).filter((a) => isNewsVisible(a, today));
 }
 
 /** Newest first, pins ignored (top page). */

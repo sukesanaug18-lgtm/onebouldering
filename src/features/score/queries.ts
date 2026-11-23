@@ -1,4 +1,5 @@
 import "server-only";
+import { connection } from "next/server";
 import { cacheLife, cacheTag } from "next/cache";
 import {
   approvedProblems,
@@ -23,6 +24,8 @@ async function loadPointMap(seasonId: string): Promise<PointMap> {
 
 /** Points per problem for the season (falls back to the problem number when unreadable). */
 export async function getPointMap(seasonId: string): Promise<PointMap> {
+  // Read at request time, never while building (the build has no data and must not bake it in).
+  await connection();
   try {
     return await loadPointMap(seasonId);
   } catch (err) {

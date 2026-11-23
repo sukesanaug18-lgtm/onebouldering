@@ -1,21 +1,33 @@
-# Firebase App Hosting settings.
+# Firebase App Hosting settings (setup steps: docs/deploy.md).
 # https://firebase.google.com/docs/app-hosting/configure
 runConfig:
   minInstances: 0
   maxInstances: 4
 
 env:
-  # Temporary: set to the *.hosted.app URL after the first rollout,
-  # then to the production domain once it is decided.
+  # The site's own URL (QR codes, links in OGP). After the first rollout, replace this with the
+  # URL shown in the console (https://<backend>--one-bouldering.<region>.hosted.app), then with
+  # the production domain once it is decided.
   - variable: NEXT_PUBLIC_SITE_URL
     value: https://REPLACE-WITH-BACKEND.hosted.app
     availability:
       - BUILD
       - RUNTIME
 
-  # Signs athlete session cookies. Stored in Cloud Secret Manager, never in the repo.
-  # Create once:  npx firebase apphosting:secrets:set session-secret
+  # Firestore / Auth / Storage project. App Hosting also provides FIREBASE_CONFIG, but the
+  # project is pinned here so the server can never read another project by mistake.
+  - variable: FIREBASE_PROJECT_ID
+    value: one-bouldering
+    availability:
+      - BUILD
+      - RUNTIME
+
+  # Signs athlete / gym session cookies. Stored in Cloud Secret Manager, never in the repo.
+  # Create once:  npx firebase-tools apphosting:secrets:set session-secret --project one-bouldering
   - variable: SESSION_SECRET
     secret: session-secret
     availability:
       - RUNTIME
+
+  # The Storage bucket and the Web API key (office sign-in) come from FIREBASE_CONFIG /
+  # FIREBASE_WEBAPP_CONFIG, which App Hosting sets automatically (src/server/firebase-config.ts).

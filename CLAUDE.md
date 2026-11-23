@@ -70,7 +70,7 @@
 | サーバー処理 | Next.js の **Server Actions / Route Handlers** ＋ **firebase-admin** | 書き込みはここだけ |
 | バックグラウンド処理 | **Cloud Functions v2**（`onUserWrite` などのトリガー、毎日03:00のスプレッドシート自動バックアップ） | 既存の Functions を整理して引き継ぐ |
 | 認証 | 選手: LICENCE NO. ＋ 4桁PIN（ハッシュ化、セッションは httpOnly Cookie）<br>事務局: Firebase Authentication（メール＋権限）<br>店舗: 会場ID＋パスワード（ハッシュ化） | |
-| ホスティング | **Firebase App Hosting** | Next.js のサーバー処理に対応。Firestore と同じプロジェクトで運用できる |
+| ホスティング | **Firebase App Hosting** | Next.js のサーバー処理に対応。Firestore と同じプロジェクトで運用できる。公開手順は `docs/deploy.md`（バックエンド名 `onebouldering`、GitHub `main` に push で自動更新）。ビルド中は Firestore を読まない：キャッシュ付きの読み込み（`getVenues`・`getRanking`・`getPublishedNews`・`getEventPoster` など）の入口で `await connection()` し、呼ぶ側は `<Suspense>` で包む（データが空のプロジェクトでもビルドが通り、古いデータを焼き込まない）。プロジェクト ID・Storage・Web API キーは App Hosting が渡す `FIREBASE_CONFIG` / `FIREBASE_WEBAPP_CONFIG` からも読む（`src/server/firebase-config.ts`） |
 | ドメイン | **仮**: App Hosting が発行する `*.hosted.app` のURL | 本番ドメインが決まったら、設定を変えるだけで切り替えられるようにする（URLは環境変数 `NEXT_PUBLIC_SITE_URL` で管理） |
 | 解析 | GA4 ＋ Looker Studio（既存と同じ） | |
 | テスト | **Vitest**（ロジック）、**Playwright**（主要な流れ: 登録→Tryout→Ranking提出→店舗承認） | |
