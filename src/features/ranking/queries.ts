@@ -33,6 +33,8 @@ async function loadVenues(): Promise<Venue[]> {
   cacheLife("hours");
   cacheTag("venues");
   const snap = await withTimeout(adminDb().collection("venues").get());
+  // Never cache an empty list (e.g. read while the Emulator is being re-seeded).
+  if (snap.empty) throw new Error("No venues found");
   return snap.docs
     .map((d) => {
       const v = d.data();

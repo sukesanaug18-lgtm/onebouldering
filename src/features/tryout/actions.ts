@@ -3,7 +3,6 @@
 import { randomUUID } from "node:crypto";
 import { updateTag } from "next/cache";
 import { canonicalDivision, UNDECIDED_DIVISION } from "@/domain/division";
-import { tnfcControlCategory } from "@/domain/tnfc";
 import {
   categoryForGender,
   CHALLENGEABLE,
@@ -17,6 +16,7 @@ import { CURRENT_SEASON_ID } from "@/lib/season";
 import { getCurrentUser } from "@/server/auth";
 import { adminDb } from "@/server/firebase-admin";
 import { rebuildRankingCache } from "@/server/ranking-cache";
+import { syncTnfcEntries } from "@/server/tnfc-sync";
 import { TryoutSchema, type TryoutState } from "./schemas";
 
 // Division Tryout submission (workflow diagrams B-2 and B-8). Confirmed on submit; no staff approval.
@@ -100,29 +100,13 @@ export async function submitTryout(_prev: TryoutState, formData: FormData): Prom
       }
 
       if (result.newDivision !== result.oldDivision) {
-        const category = tnfcControlCategory(result.newDivision);
-        for (const e of entries.docs) {
-          const ed = e.data();
-          if (String(ed.seasonId ?? seasonId) !== seasonId || ed.status === "cancelled") continue;
-          if (String(ed.division ?? "") === result.newDivision) continue;
-          tx.update(e.ref, {
-            division: result.newDivision,
-            tnfcControlCategory: category,
-            autoSyncedFromTryoutAt: now,
-            updatedAt: now,
-          });
-          tx.set(db.collection("tnfc_sync_logs").doc(), {
-            seasonId,
-            userId: user.id,
-            entryId: e.id,
-            roundId: ed.roundId ?? "",
-            roundName: ed.roundName ?? "",
-            oldDivision: String(ed.division ?? ""),
-            newDivision: result.newDivision,
-            tnfcControlCategory: category,
-            syncedAt: now,
-          });
-        }
+        syncTnfcEntries(tx, entries.docs, {
+          seasonId,
+          userId: user.id,
+          now,
+          source: "tryout",
+          change: { division: result.newDivision },
+        });
       }
 
       tx.update(userRef, {

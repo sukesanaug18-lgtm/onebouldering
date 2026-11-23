@@ -22,4 +22,4 @@ npm run dev                        # http://localhost:3000
 | `npm test` | 単体テスト（Vitest） |
 | `npm run test:e2e` | 画面の通しテスト（Playwright。初回は `npx playwright install chromium`） |
 | `npm run emulators` | Firebase Emulator（Auth / Firestore。UI は http://127.0.0.1:4000） |
-| `npm run seed` | Emulator にデモデータ（架空の選手・30ジム・スコア）を入れて ranking_cache を作る。Emulator 起動中に実行。demo-* 以外のプロジェクトでは動かない。ログイン確認用のデモ選手：ライセンスNo. `10000` / 暗証番号 `0000`（Emulator 専用）。店舗スタッフ画面 `/gym-admin` は、どの会場もパスワード `gym-demo-2027`（Emulator 専用） |
+| `npm run seed` | Emulator にデモデータ（架空の選手・30ジム・スコア）を入れて ranking_cache を作る。Emulator 起動中に実行。demo-* 以外のプロジェクトでは動かない。ログイン確認用のデモ選手：ライセンスNo. `10000` / 暗証番号 `0000`（Emulator 専用）。店舗スタッフ画面 `/gym-admin` は、どの会場もパスワード `gym-demo-2027`。事務局画面 `/admin` は `office@example.test` / `office-demo-2027`（権限なしの確認用に `staff@example.test` も同じパスワード）（Emulator 専用） |

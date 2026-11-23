@@ -2,6 +2,7 @@
 // Run with the emulators running:  npm run seed
 // Refuses to run against anything except the Emulator + a demo-* project.
 import { initializeApp } from "firebase-admin/app";
+import { getAuth } from "firebase-admin/auth";
 import { getFirestore, type WriteBatch } from "firebase-admin/firestore";
 import { GYMS } from "../src/content/gyms.ts";
 import { aggregateRankingData } from "../src/domain/ranking.ts";
@@ -9,6 +10,7 @@ import { hashPin } from "../src/server/crypto.ts";
 
 const PROJECT_ID = process.env.FIREBASE_PROJECT_ID ?? "demo-onebouldering";
 process.env.FIRESTORE_EMULATOR_HOST ??= "127.0.0.1:8080";
+process.env.FIREBASE_AUTH_EMULATOR_HOST ??= "127.0.0.1:9099";
 if (!PROJECT_ID.startsWith("demo-")) {
   console.error(`Refusing to seed project "${PROJECT_ID}". Only demo-* projects are allowed.`);
   process.exit(1);
@@ -292,7 +294,8 @@ const ranking = aggregateRankingData({
   seasonId: SEASON,
 });
 
-const db = getFirestore(initializeApp({ projectId: PROJECT_ID }));
+const app = initializeApp({ projectId: PROJECT_ID });
+const db = getFirestore(app);
 
 async function writeAll(
   collection: string,
@@ -314,6 +317,18 @@ const host = process.env.FIRESTORE_EMULATOR_HOST ?? "127.0.0.1:8080";
 await fetch(`http://${host}/emulator/v1/projects/${PROJECT_ID}/databases/(default)/documents`, {
   method: "DELETE",
 });
+
+// Office login for local testing only (Auth Emulator). Credentials are in README.
+const authHost = process.env.FIREBASE_AUTH_EMULATOR_HOST;
+await fetch(`http://${authHost}/emulator/v1/projects/${PROJECT_ID}/accounts`, { method: "DELETE" });
+const officeUser = await getAuth(app).createUser({
+  email: "office@example.test",
+  password: "office-demo-2027",
+  displayName: "事務局（デモ）",
+});
+await getAuth(app).setCustomUserClaims(officeUser.uid, { admin: true });
+// A signed-in account without the admin claim, to check that it is refused.
+await getAuth(app).createUser({ email: "staff@example.test", password: "office-demo-2027" });
 
 await writeAll("venues", venues, (d) => String(d.id));
 await writeAll("users", users, (d) => String(d.id));
