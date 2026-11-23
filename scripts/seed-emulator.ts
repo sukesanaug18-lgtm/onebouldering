@@ -115,6 +115,106 @@ users.push({
   pinHash: await hashPin("0000"),
 });
 
+// Demo player's history, so every my page block has something to show.
+const DEMO = "10000";
+const [g1, g2, g3] = [venues[0], venues[1], venues[2]];
+const now = new Date().toISOString();
+const sheet = (nos: number[]) =>
+  Object.fromEntries(
+    Array.from({ length: 40 }, (_, i) => [String(i + 1), nos.includes(i + 1) ? "Y" : "N"]),
+  );
+const demoScores: [typeof g1, string, number[], string][] = [
+  [g1, "Approved", [1, 2, 3, 5, 8, 10, 12, 15, 18, 20, 22], ""],
+  [g2, "Pending", [1, 2, 4, 6, 9, 11, 14], ""],
+  [g3, "Rejected", [1, 3, 30], "No.30 の完登を確認できませんでした"],
+];
+for (const [v, status, nos, rejectReason] of demoScores) {
+  const total = nos.reduce((s, n) => s + n, 0);
+  participantData.push({
+    seasonId: SEASON,
+    userId: DEMO,
+    One_Bouldering_ID: DEMO,
+    venueId: v.id,
+    problems: sheet(nos),
+    ...(status === "Approved"
+      ? { approvedProblems: Object.fromEntries(nos.map((n) => [String(n), true])) }
+      : {}),
+    totalPoints: total,
+    status,
+    rejectReason,
+    submittedAt: now,
+  });
+}
+competitionResults.push({
+  seasonId: SEASON,
+  userId: DEMO,
+  competitionName: "サンプル公認大会（デモ）",
+  rank: "4",
+  earnedPoints: 2500,
+  status: "active",
+});
+const demoExtras: [string, string, Record<string, unknown>][] = [
+  [
+    "tryout_logs",
+    "seed_try_demo",
+    {
+      seasonId: SEASON,
+      userId: DEMO,
+      venueId: g1.id,
+      venueName: g1.name,
+      challengedShortDivision: "MD3",
+      completedCount: 5,
+      judgment: "INITIAL",
+      oldDivision: "UNDECIDED",
+      newDivision: "Men‘s Division 3",
+      createdAt: "2026-05-10T03:00:00.000Z",
+    },
+  ],
+  [
+    "tnfc_entries",
+    "seed_round1_10000",
+    {
+      seasonId: SEASON,
+      roundId: "seed_round1",
+      roundName: "予選 第1ラウンド（デモ）",
+      venueName: g2.name,
+      userId: DEMO,
+      division: "Men‘s Division 3",
+      bibNo: 312,
+      sessionGroup: "Group B（11:00〜12:30）",
+      zeusOrderNo: "DEMO-0001",
+      status: "entered",
+      createdAt: now,
+    },
+  ],
+  [
+    "tnfc_results",
+    "seed_round1_10000",
+    {
+      seasonId: SEASON,
+      roundId: "seed_round1",
+      userId: DEMO,
+      rank: 8,
+      qualifiedForFinals: true,
+      rankingPointsAwarded: 3000,
+      status: "active",
+    },
+  ],
+  [
+    "notifications",
+    "seed_notif_demo",
+    {
+      seasonId: SEASON,
+      userId: DEMO,
+      title: "申請スコアの差し戻し",
+      message: `${g3.name} のスコアが差し戻されました。理由: No.30 の完登を確認できませんでした`,
+      createdAt: now,
+      read: false,
+      type: "score_rejected",
+    },
+  ],
+];
+
 const ranking = aggregateRankingData({
   users,
   participantData,
@@ -140,10 +240,19 @@ async function writeAll(
   }
 }
 
+// Start from an empty Emulator database so running the seed again gives the same data.
+const host = process.env.FIRESTORE_EMULATOR_HOST ?? "127.0.0.1:8080";
+await fetch(`http://${host}/emulator/v1/projects/${PROJECT_ID}/databases/(default)/documents`, {
+  method: "DELETE",
+});
+
 await writeAll("venues", venues, (d) => String(d.id));
 await writeAll("users", users, (d) => String(d.id));
 await writeAll("participant_data", participantData);
 await writeAll("competition_results", competitionResults);
+for (const [collection, id, data] of demoExtras) {
+  await db.collection(collection).doc(id).set(data);
+}
 const cacheDoc = {
   seasonId: SEASON,
   cache_data: JSON.stringify(ranking),

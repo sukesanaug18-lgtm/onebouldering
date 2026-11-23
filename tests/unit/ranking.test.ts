@@ -107,3 +107,25 @@ describe("ranking helpers", () => {
     expect(parseRankingCache(undefined)).toBeNull();
   });
 });
+
+describe("myRankings", () => {
+  it("finds the player's overall and region places with shared ranks", async () => {
+    const { myRankings } = await import("@/domain/ranking");
+    const div = "Men‘s Division 3";
+    const data = {
+      global: {
+        [div]: [
+          { id: "a", name: "A", score: 900 },
+          { id: "b", name: "B", score: 800 },
+          { id: "me", name: "Me", score: 800 },
+        ],
+      },
+      region: { 関東: { [div]: [{ id: "me", name: "Me", score: 500 }] }, 関西: {} },
+      gym: {},
+    };
+    const r = myRankings(data, "me", div);
+    expect(r.overall).toEqual({ rank: 2, total: 3, score: 800 });
+    expect(r.regions).toEqual([{ region: "関東", rank: 1, total: 1, score: 500 }]);
+    expect(myRankings(null, "me", div).overall).toBeNull();
+  });
+});

@@ -202,3 +202,29 @@ export function parseRankingCache(doc: Doc | undefined): RankingCacheData | null
   }
   return null;
 }
+
+export type MyRank = { rank: number; total: number; score: number };
+
+/** One player's place in a ranking list (ties share a rank), or null if not listed. */
+export function findMyRank(entries: RankingEntry[] | undefined, userId: string): MyRank | null {
+  if (!entries?.length) return null;
+  const me = withRanks(entries).find((e) => e.id === userId);
+  return me ? { rank: me.rank, total: entries.length, score: me.score } : null;
+}
+
+/** The player's overall and per-region places in their Division. */
+export function myRankings(
+  data: RankingCacheData | null,
+  userId: string,
+  division: string,
+): { overall: MyRank | null; regions: (MyRank & { region: string })[] } {
+  if (!data) return { overall: null, regions: [] };
+  const regions = Object.entries(data.region)
+    .map(([region, byDiv]) => {
+      const r = findMyRank(byDiv[division], userId);
+      return r ? { region, ...r } : null;
+    })
+    .filter((r): r is MyRank & { region: string } => r !== null)
+    .sort((a, b) => b.score - a.score);
+  return { overall: findMyRank(data.global[division], userId), regions };
+}

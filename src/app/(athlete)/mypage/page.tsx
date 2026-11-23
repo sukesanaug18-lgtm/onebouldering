@@ -1,59 +1,75 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
-import { shortDivision, UNDECIDED_DIVISION } from "@/domain/division";
-import { logout } from "@/features/auth/actions";
+import { UNDECIDED_DIVISION } from "@/domain/division";
+import {
+  Competitions,
+  TnfcEntries,
+  TryoutHistory,
+} from "@/features/mypage/components/HistorySections";
+import { LicenseCard } from "@/features/mypage/components/LicenseCard";
+import { MyRanking } from "@/features/mypage/components/MyRanking";
+import { SectionSkeleton } from "@/features/mypage/components/MySection";
+import { Notifications } from "@/features/mypage/components/Notifications";
+import { ProfileSection } from "@/features/mypage/components/ProfileSection";
+import { CURRENT_SEASON_ID } from "@/lib/season";
 import { requireUser } from "@/server/auth";
 
 export const metadata: Metadata = { title: "マイページ", robots: { index: false } };
 
-// Minimal my page for the auth step. The full page (Tryout history, Ranking, TNFC entries)
-// is built in its own step (CLAUDE.md 7-2).
+// My page (workflow diagram B-2): license, notices, Ranking, Tryout history, TNFC and
+// official competitions for the current season. Each block streams in on its own.
 
-async function Profile() {
+async function MyPageContent() {
   const user = await requireUser("/mypage");
+  const season = CURRENT_SEASON_ID;
   const undecided = user.division === UNDECIDED_DIVISION;
+
   return (
-    <>
-      <h1 className="text-3xl font-bold tracking-tight">{user.name} さん</h1>
-      <div className="mt-8 grid gap-4 sm:grid-cols-2">
-        <Card>
-          <p className="text-sm text-text-3">ライセンスNo.</p>
-          <p className="mt-1 font-display text-3xl font-extrabold tabular-nums">{user.id}</p>
-        </Card>
-        <Card accent="tryout">
-          <p className="text-sm text-text-3">Division</p>
-          <p className="mt-1 font-display text-3xl font-extrabold">
-            {undecided ? "未確定" : shortDivision(user.division)}
+    <div className="space-y-10">
+      <LicenseCard user={user} seasonId={season} />
+      {undecided && (
+        <div className="rounded-2xl border border-event-tryout/30 bg-white p-5">
+          <p className="font-bold">次は Division Tryout を受けましょう</p>
+          <p className="mt-1 text-sm text-text-2">
+            参加ジムの QR コードを読むと受けられます。Divisionが決まると、Ranking と THE NORTH FACE
+            CUP に参加できます。
           </p>
-          {undecided && (
-            <p className="mt-2 text-sm text-text-2">
-              参加ジムで Division Tryout を受けると決まります。
-            </p>
-          )}
-        </Card>
-      </div>
-      <div className="mt-8 flex flex-wrap gap-3">
-        {undecided && <Button href="/tryout/about">Division Tryout について</Button>}
-        <form action={logout}>
-          <Button type="submit" variant="secondary">
-            ログアウト
+          <Button href="/tryout/about" variant="text" className="mt-2">
+            Division Tryout について
           </Button>
-        </form>
-      </div>
-    </>
+        </div>
+      )}
+      <Suspense fallback={null}>
+        <Notifications userId={user.id} />
+      </Suspense>
+      <Suspense fallback={<SectionSkeleton />}>
+        <MyRanking userId={user.id} division={user.division} seasonId={season} />
+      </Suspense>
+      <Suspense fallback={<SectionSkeleton />}>
+        <TryoutHistory userId={user.id} />
+      </Suspense>
+      <Suspense fallback={<SectionSkeleton />}>
+        <TnfcEntries userId={user.id} seasonId={season} />
+      </Suspense>
+      <Suspense fallback={<SectionSkeleton />}>
+        <Competitions userId={user.id} seasonId={season} />
+      </Suspense>
+      <ProfileSection user={user} />
+    </div>
   );
 }
 
 export default function MyPage() {
   return (
-    <main className="mx-auto w-full max-w-[1200px] px-5 py-16 md:py-24">
-      <Badge>マイページ</Badge>
-      <div className="mt-4">
-        <Suspense fallback={<div className="h-64 rounded-2xl bg-bg-subtle" aria-busy="true" />}>
-          <Profile />
+    <main className="bg-bg-subtle px-5 py-12 md:py-20">
+      <div className="mx-auto max-w-[720px]">
+        <p className="font-display text-xs font-bold tracking-[0.2em] text-text-3 uppercase">
+          My Page
+        </p>
+        <h1 className="mt-2 mb-8 text-3xl font-bold tracking-tight">マイページ</h1>
+        <Suspense fallback={<div className="h-56 rounded-2xl bg-white" aria-busy="true" />}>
+          <MyPageContent />
         </Suspense>
       </div>
     </main>
