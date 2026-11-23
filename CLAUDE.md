@@ -49,6 +49,8 @@
 
 **データはコピーする（移行しない）**。今のデータ（`one-bouldering-ranking` の Firestore・Storage・スプレッドシート）はそのまま使い続けるので、一切書き換えない・消さない。コピー用スクリプトは旧プロジェクトを**読むだけ**で、新プロジェクト `one-bouldering` に書き込む。コピーは何度でもやり直せる形にし（同じ id で上書き）、本番切り替えの直前にもう一度コピーして最新にする。新サイトで変えた内容は旧データには戻らない。形を変える必要がある項目（旧 NEWS の HTML 本文、スプレッドシートのロゴ画像など）は、コピーするときに新しい形に直して新プロジェクト側にだけ書く。Firestore のコレクション名・項目名は原則そのまま使う（`users`, `venues`, `participant_data`, `tryout_logs`, `competition_results`, `ranking_cache`, `point_master`, `official_competitions`, `tournament_results`, `tnfc_rounds`, `tnfc_entries`, `tnfc_results`, `tnfc_cancellations`, `tnfc_sync_logs`, `news_articles`, `site_settings`, `notifications`）。名前を変える場合は、コピー用スクリプトの中で変換する。
 
+**コピー用スクリプト**：`scripts/copy-data.ts`（`npm run copy-data -- --source one-bouldering-ranking --target one-bouldering`）。何も付けなければお試し実行（件数を表示するだけ）で、`--apply` を付けたときだけ書き込む。コピー元は読むだけ（get のみ）。コピー先は同じ id で上書きし、何も消さない（新サイトにしかない文書は残る）。コピー先に `one-bouldering-ranking` を指定すると止まる。変換は `src/domain/data-copy.ts`：平文の暗証番号（`pin` など）は `pinHash`、会場の平文パスワードは `gymPasswordHash` にして平文の項目は書かない。`site_settings` の GA4 設定（秘密鍵入り）はコピーしない。`site_settings/news_*` の旧 NEWS は HTML を記号の本文に直して `news_articles` に書く（id は `news_20261017_launch` → `20261017-launch`、予約公開は「公開＋未来の日付」、不明なカテゴリーは「お知らせ」）。文書の参照（DocumentReference）はコピー先の同じパスに付け替える。ranking_cache はコピーせず、コピー後のデータから作り直す。記録は `site_settings/data_copy`。サイトのキャッシュ（NEWS・ランキングは最大1時間）はスクリプトでは消えないので、本番ではコピー → デプロイ（または切り替え）の順にする。Storage（旧 NEWS の画像・ロゴ）と Firebase Auth のアカウントは、まだコピーしない（旧 NEWS の画像 URL は `oldThumbnailUrl` に残す）。Emulator で試すとき：`npm run seed` → `npm run seed:old`（旧アプリの形の架空データを demo-old-ranking に入れる）→ `npm run copy-data -- --emulator --source demo-old-ranking --target demo-onebouldering --apply`。
+
 ---
 
 ## 3. 技術スタック

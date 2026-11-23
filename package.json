@@ -14,7 +14,9 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "emulators": "node scripts/emulators.mjs --only auth,firestore,storage",
-    "seed": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/seed-emulator.ts"
+    "seed": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/seed-emulator.ts",
+    "seed:old": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/seed-old-emulator.ts",
+    "copy-data": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/copy-data.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^7.0.7",
