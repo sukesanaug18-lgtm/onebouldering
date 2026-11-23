@@ -7,7 +7,7 @@
 
 ## 0. いまの状態（セットアップ時点）
 - Next.js **16.4.6** / React 19.3 / Tailwind CSS 4.3（Turbopack の CSS ローダー方式。`postcss.config` はない）/ `cacheComponents: true`。
-- Firebase の本番プロジェクトは **`one-bouldering`**（`.firebaserc` の `default` / `production`）。既存アプリの `one-bouldering-ranking` とは別のプロジェクトで、データは後で移行する。
+- Firebase の本番プロジェクトは **`one-bouldering`**（`.firebaserc` の `default` / `production`）。既存アプリの `one-bouldering-ranking` とは別のプロジェクトで、データは**移行せずコピー**する（下の「データはコピーする」）。
 - ローカル開発は仮プロジェクト ID `demo-onebouldering` と Emulator を使う（`npm run emulators`。本物のデータには触れない）。
 - Java は **Temurin JDK 21** を導入済み。Windows では JDK の内部通信が `%TEMP%` で失敗するため、`scripts/emulators.mjs` が `-Djdk.net.unixdomain.tmpdir` を自動で設定する。
 - 英字見出しは **Cabinet Grotesk**（Fontshare、ITF Free Font License。Medium / Bold / Extrabold の woff2 を `src/app/fonts/` に配置）。
@@ -47,7 +47,7 @@
 | 5 | 業務ロジックがブラウザ側（`apiClient.ts`）とCloud Functions側に分かれて重複 | 判定・計算ロジックは `src/domain/` に1つだけ置き、サーバーと Functions で共有する |
 | 6 | 静的書き出し（Cloudflare Pages）なのでサーバー処理を持てない | サーバー処理ができる構成に変える（4章） |
 
-**データは引き継ぐ**。Firestore のコレクション名・項目名は原則そのまま使い、移行作業を最小にする（`users`, `venues`, `participant_data`, `tryout_logs`, `competition_results`, `ranking_cache`, `point_master`, `official_competitions`, `tournament_results`, `tnfc_rounds`, `tnfc_entries`, `tnfc_results`, `tnfc_cancellations`, `tnfc_sync_logs`, `news_articles`, `site_settings`, `notifications`）。変える場合は移行スクリプトを用意する。
+**データはコピーする（移行しない）**。今のデータ（`one-bouldering-ranking` の Firestore・Storage・スプレッドシート）はそのまま使い続けるので、一切書き換えない・消さない。コピー用スクリプトは旧プロジェクトを**読むだけ**で、新プロジェクト `one-bouldering` に書き込む。コピーは何度でもやり直せる形にし（同じ id で上書き）、本番切り替えの直前にもう一度コピーして最新にする。新サイトで変えた内容は旧データには戻らない。形を変える必要がある項目（旧 NEWS の HTML 本文、スプレッドシートのロゴ画像など）は、コピーするときに新しい形に直して新プロジェクト側にだけ書く。Firestore のコレクション名・項目名は原則そのまま使う（`users`, `venues`, `participant_data`, `tryout_logs`, `competition_results`, `ranking_cache`, `point_master`, `official_competitions`, `tournament_results`, `tnfc_rounds`, `tnfc_entries`, `tnfc_results`, `tnfc_cancellations`, `tnfc_sync_logs`, `news_articles`, `site_settings`, `notifications`）。名前を変える場合は、コピー用スクリプトの中で変換する。
 
 ---
 
@@ -64,7 +64,7 @@
 | 日本語改行 | **BudouX** ＋ CSS `word-break: auto-phrase` / `text-wrap: balance` | |
 | アイコン | **lucide-react** | 絵文字は使わない |
 | フォーム | **react-hook-form** ＋ **zod**（入力チェックはサーバーでも同じ zod で再チェック） | |
-| データベース | **Cloud Firestore**（既存プロジェクトのデータを引き継ぐ） | |
+| データベース | **Cloud Firestore**（既存プロジェクトのデータをコピーして使う。既存側は読むだけ） | |
 | サーバー処理 | Next.js の **Server Actions / Route Handlers** ＋ **firebase-admin** | 書き込みはここだけ |
 | バックグラウンド処理 | **Cloud Functions v2**（`onUserWrite` などのトリガー、毎日03:00のスプレッドシート自動バックアップ） | 既存の Functions を整理して引き継ぐ |
 | 認証 | 選手: LICENCE NO. ＋ 4桁PIN（ハッシュ化、セッションは httpOnly Cookie）<br>事務局: Firebase Authentication（メール＋権限）<br>店舗: 会場ID＋パスワード（ハッシュ化） | |
@@ -111,7 +111,7 @@ onebouldering/
 │   └── src/
 │       ├── triggers/               # onUserWrite, onParticipantDataWrite, onCompResultWrite
 │       └── scheduled/              # sheetsBackup（毎日03:00）
-├── scripts/                        # データ移行・PINハッシュ化などの一回きりの処理
+├── scripts/                        # データのコピー（旧プロジェクトは読むだけ）・PINハッシュ化などの処理
 ├── tests/
 │   ├── unit/                       # src/domain のテスト
 │   └── e2e/                        # Playwright
@@ -212,11 +212,11 @@ onebouldering/
 
 **TNFC キャンセル・会場変更（図B-8 1.6.1〜1.6.2、図B-5 1.2.3）**：大会の「キャンセル・会場変更」タブで選手を選び、①キャンセル（区分＝コンビニ返金／キャンセル料あり／返金なし、金額、受付手段、メモ）→ エントリーを cancelled にし `tnfc_cancellations` に記録、②会場変更 → `${移動先roundId}_${userId}` に移してゼッケン・グループを外す（定員超過・要再採番・旧サイト3か所の修正を案内）。どちらも受付手段で送る返信文を出す。台帳は `/admin/tnfc/cancellations`（CSV あり）。
 
-**NEWS**：`news_articles`（id は `YYYYMMDD-xxxxxx`）。事務局 `/admin/news` で作成・編集・削除（下書き／公開、公開日が未来なら予約公開、先頭固定、画像1枚＝サーバーで WebP 化して Storage `news/{id}.webp`、`/api/news-images/{id}?v=` で配信）。本文は HTML ではなく簡単な記号（`## 見出し`・`- 箇条書き`・`**太字**`・`[文字](URL)`・URL自動リンク）で書き、`src/domain/news.ts` が解析して React 要素で表示する（DB の HTML をページに入れない。リンクは https/http とサイト内パスのみ）。公開側 `/news`（カテゴリー絞り込み）・`/news/[slug]`・トップの最新3件。公開一覧は1時間キャッシュ＋保存時 updateTag("news")。旧サイトの HTML 記事はデータ移行時に変換する。
+**NEWS**：`news_articles`（id は `YYYYMMDD-xxxxxx`）。事務局 `/admin/news` で作成・編集・削除（下書き／公開、公開日が未来なら予約公開、先頭固定、画像1枚＝サーバーで WebP 化して Storage `news/{id}.webp`、`/api/news-images/{id}?v=` で配信）。本文は HTML ではなく簡単な記号（`## 見出し`・`- 箇条書き`・`**太字**`・`[文字](URL)`・URL自動リンク）で書き、`src/domain/news.ts` が解析して React 要素で表示する（DB の HTML をページに入れない。リンクは https/http とサイト内パスのみ）。公開側 `/news`（カテゴリー絞り込み）・`/news/[slug]`・トップの最新3件。公開一覧は1時間キャッシュ＋保存時 updateTag("news")。旧サイトの HTML 記事はデータをコピーするときに新しい書き方へ変換する（旧データはそのまま）。
 
 **分析**：`/admin/analytics`。今季の会員・Ranking 参加者・提出数・1人あたりジム数・Tryout 受験、月別の提出数と新規会員、課題ごとの完登率、提出の時間帯（日本時間）、会場別・Division 別（CSV あり `/api/admin/analytics?type=venues|divisions|problems`）。計算は `src/domain/analytics.ts`。閲覧数などのアクセス解析は GA4 の管理画面で見る（旧サイトのように GA4 の秘密鍵を Firestore に保存しない）。
 
-**A4 POP**：`/admin/tools/pop-a4`。会場の Ranking 開催期間から地域別の開催スケジュール（A4 縦1枚＝1地域、ロゴ・期間・参加のポイント・公式サイトの QR）を作り、ブラウザで印刷／PDF 保存。ジム数に応じて行の大きさを変え、1地域およそ12ジムまで1枚に収まる。文言は `src/content/pop.ts`。ロゴは今は `src/content/gyms.ts` を名前で照合（データ移行でロゴを Storage に移したら会場データから読む）。
+**A4 POP**：`/admin/tools/pop-a4`。会場の Ranking 開催期間から地域別の開催スケジュール（A4 縦1枚＝1地域、ロゴ・期間・参加のポイント・公式サイトの QR）を作り、ブラウザで印刷／PDF 保存。ジム数に応じて行の大きさを変え、1地域およそ12ジムまで1枚に収まる。文言は `src/content/pop.ts`。ロゴは今は `src/content/gyms.ts` を名前で照合（データのコピーでロゴを新プロジェクトの Storage に複製したら会場データから読む）。
 
 **年度更新（図B-7 1.5.1〜1.5.2）**：`/admin/rollover`。次シーズン（CURRENT_SEASON_ID+1）への切り替えで、Men‘s Division 4・5 と Women‘s Division 3・4 を UNDECIDED（divisionStatus undecided、Tryout を受け直し）、U カテゴリーは次シーズン末の4月1日時点の年齢で決め直し（16歳以上は UNDECIDED）。生年月日がない・おかしい U の人は変更せず「確認が必要」に出す。ロジックは `src/domain/rollover.ts`。プレビュー → 一括実行（users 更新・本人通知・admin_logs・ランキング再構築）。実行記録 `site_settings/rollover_${次シーズン}` があれば2回目は不可（途中で止まった場合だけ続きを実行できる）。本戦の昇格は先に反映する運用。
 
@@ -319,7 +319,7 @@ onebouldering/
 ## 7. 実装ルール（AI・人間共通）
 
 1. **進め方**: 承認 → 初期セットアップ（パッケージ導入、設定、デザイントークン、フォント、空のレイアウト、Emulator 起動確認）まで行って止まる。以降は **ページ／コンポーネントを1つずつ作り、毎回確認をもらってから次へ進む**。
-2. **作る順番（案）**: 共通部品（ボタン・カード・FadeIn）→ ヘッダー/フッター → トップ → 3イベントのページ → はじめての方へ → ランキング → 認証 → 統一QR入口・Tryout・Ranking提出 → マイページ → 店舗画面 → 事務局画面 → データ移行 → 本番切り替え。
+2. **作る順番（案）**: 共通部品（ボタン・カード・FadeIn）→ ヘッダー/フッター → トップ → 3イベントのページ → はじめての方へ → ランキング → 認証 → 統一QR入口・Tryout・Ranking提出 → マイページ → 店舗画面 → 事務局画面 → データのコピー → 本番切り替え（直前にもう一度コピー）。
 3. Firestore への書き込みは**サーバー側だけ**。権限チェックは必ずサーバーで行う。
 4. 秘密情報（APIキーの値、パスワード、サービスアカウント）はコードに書かない。`.env.local` と App Hosting のシークレットに置き、Git に入れない。
 5. 判定・計算ロジックは `src/domain/` に置き、必ず単体テストを書く（Tryout判定、pt計算、ゼッケン採番、年度末リセットなど）。既存の `integratedLogic.ts` / `tnfcLogic.ts` / `functions/src/domain.ts` の仕様とテストを引き継ぐ。
