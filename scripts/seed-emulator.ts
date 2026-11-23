@@ -106,7 +106,19 @@ const COMP_POINTS = [10000, 8000, 6000, 5000, 5000, 3000, 3000, 1000];
 for (let i = 0; i < 160; i++) {
   const id = String(10001 + i);
   const [division, base] = pick(DIVISIONS);
-  users.push({ id, name: `サンプル選手${String(i + 1).padStart(3, "0")}`, division });
+  // U players get a birth date (spread over three school years; every 7th has none) so the
+  // year-end screen has U moves, U-15 graduates and manual checks to show.
+  const isU = division.startsWith("U-");
+  const uYear = (division === "U-15M" ? 2011 : 2014) + (i % 3);
+  users.push({
+    id,
+    name: `サンプル選手${String(i + 1).padStart(3, "0")}`,
+    division,
+    ...(isU ? { gender: division === "U-12W" ? "女性" : "男性" } : {}),
+    ...(isU && i % 7 !== 0
+      ? { birthDate: `${uYear}-${String(1 + (i % 12)).padStart(2, "0")}-15` }
+      : {}),
+  });
   const home = pick(venues);
   const visits = 1 + Math.floor(rand() * 5);
   for (let v = 0; v < visits; v++) {

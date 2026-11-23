@@ -11,6 +11,7 @@ const ITEMS = [
   { href: "/admin/venues", label: "会場" },
   { href: "/admin/tnfc", label: "TNFC" },
   { href: "/admin/posters", label: "ポスター" },
+  { href: "/admin/rollover", label: "年度更新" },
 ] as const;
 
 /** Sideways tabs on phones, a vertical list from lg up. */
