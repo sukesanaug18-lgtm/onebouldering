@@ -3,7 +3,7 @@ import { cacheLife, cacheTag } from "next/cache";
 import { parseRankingCache, type RankingCacheData } from "@/domain/ranking";
 import { adminDb } from "@/server/firebase-admin";
 
-export type Venue = { id: string; name: string; region: string };
+export type Venue = { id: string; name: string; region: string; visible: boolean };
 
 /** Firestore retries for a long time when it cannot connect; give up after 5s. */
 function withTimeout<T>(p: Promise<T>, ms = 5000): Promise<T> {
@@ -42,6 +42,7 @@ async function loadVenues(): Promise<Venue[]> {
         id: d.id,
         name: String(v.name ?? v["会場名"] ?? d.id),
         region: String(v.region ?? v["地域"] ?? "未定"),
+        visible: v.visible !== false,
       };
     })
     .sort((a, b) => a.name.localeCompare(b.name, "ja"));
@@ -69,4 +70,9 @@ export async function getVenues(): Promise<Venue[]> {
     console.error("[ranking] failed to read venues", err);
     return [];
   }
+}
+
+/** Venues players can pick (hidden venues left out). For name lookups use getVenues. */
+export async function getPublicVenues(): Promise<Venue[]> {
+  return (await getVenues()).filter((v) => v.visible);
 }

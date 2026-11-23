@@ -22,8 +22,9 @@
   /* Brand & events */
   --brand: #facc15;
   --event-tnfc: #1d1d1f;
-  --event-tryout: #2563eb;
-  --event-ranking: #facc15;
+  --event-tryout: #000000;
+  --event-ranking: #ff8c3f; /* from the Ranking logo; lines, dots and fills only */
+  --event-ranking-text: #c2410c; /* orange for text (5.2:1 on white) */
 
   /* Status */
   --status-approved: #10b981;
@@ -44,6 +45,7 @@
   --color-event-tnfc: var(--event-tnfc);
   --color-event-tryout: var(--event-tryout);
   --color-event-ranking: var(--event-ranking);
+  --color-event-ranking-text: var(--event-ranking-text);
   --color-status-approved: var(--status-approved);
   --color-status-pending: var(--status-pending);
   --color-status-rejected: var(--status-rejected);

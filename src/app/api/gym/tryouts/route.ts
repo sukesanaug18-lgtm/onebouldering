@@ -1,11 +1,9 @@
-import { shortDivision, UNDECIDED_DIVISION } from "@/domain/division";
+import { divisionName } from "@/domain/division";
 import { toCsv } from "@/domain/gym";
 import { JUDGMENT_LABEL } from "@/domain/tryout";
 import { getVenueTryouts } from "@/features/gym/queries";
 import { CURRENT_SEASON_ID } from "@/lib/season";
 import { getGymStaff } from "@/server/gym-session";
-
-const divisionLabel = (d: string) => (d === UNDECIDED_DIVISION ? "未確定" : shortDivision(d));
 
 /** CSV of the Tryouts taken at the signed-in gym this season (diagram B-3, tab 3). */
 export async function GET() {
@@ -33,12 +31,12 @@ export async function GET() {
       t.name,
       t.category,
       t.precheck,
-      t.challenged,
+      divisionName(t.challenged),
       t.completed.join(" "),
       t.completedCount,
       JUDGMENT_LABEL[t.judgment] ?? t.judgment,
-      divisionLabel(t.oldDivision),
-      divisionLabel(t.newDivision),
+      divisionName(t.oldDivision),
+      divisionName(t.newDivision),
     ]),
   );
   const file = `tryout_${staff.venueId}_${CURRENT_SEASON_ID}.csv`;

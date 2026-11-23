@@ -3,12 +3,12 @@ import { Suspense } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { FormMessage } from "@/components/ui/Field";
-import { shortDivision, UNDECIDED_DIVISION } from "@/domain/division";
+import { divisionName, UNDECIDED_DIVISION } from "@/domain/division";
 import { parsePrefill } from "@/domain/score";
 import { EntryShell } from "@/features/entry/components/EntryShell";
 import { VenuePicker } from "@/features/entry/components/VenuePicker";
 import { getVenue, param } from "@/features/entry/queries";
-import { getVenues } from "@/features/ranking/queries";
+import { getPublicVenues } from "@/features/ranking/queries";
 import { ScoreSheet } from "@/features/score/components/ScoreSheet";
 import { getMyScore, getPointMap, type MyScore } from "@/features/score/queries";
 import { CURRENT_SEASON_ID } from "@/lib/season";
@@ -27,7 +27,7 @@ async function Score({ searchParams }: { searchParams: PageProps<"/score">["sear
   const venue = await getVenue(venueId);
 
   if (!venue) {
-    const venues = await getVenues();
+    const venues = await getPublicVenues();
     return (
       <EntryShell eyebrow="Ranking" title="スコアを提出するジム">
         <Card padding="lg" className="bg-white">
@@ -72,7 +72,7 @@ async function Score({ searchParams }: { searchParams: PageProps<"/score">["sear
     <EntryShell eyebrow="Ranking" venue={venue}>
       <p className="mb-6 text-[15px] text-text-2">
         {user.name} さん ・{" "}
-        <span className="font-bold text-text">{shortDivision(user.division)}</span>
+        <span className="font-bold text-text">{divisionName(user.division)}</span>
       </p>
       <div className="mb-6 space-y-3">
         <StatusBanner mine={mine} />

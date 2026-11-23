@@ -1,11 +1,14 @@
+import { divisionName } from "@/domain/division";
 import type { EventPageContent } from "@/features/events/types";
 
 // Event page copy. Facts come from the current site (guide / ranking / tnfc pages) and the
 // 2027 workflow doc (all_business_workflows_2027.md, figures B-2, B-5, B-6).
 // Dates and venues per round come from Firestore in the data step; they are not written here.
 
-const DIVISIONS_MEN = ["MD1", "MD2", "MD3", "MD4", "MD5"];
-const DIVISIONS_WOMEN = ["WD1", "WD2", "WD3", "WD4"];
+// Official names as on the current site ("Men‘s Division 3"); short codes are never shown.
+const names = (codes: string[]) => codes.map(divisionName);
+const DIVISIONS_MEN = names(["MD1", "MD2", "MD3", "MD4", "MD5"]);
+const DIVISIONS_WOMEN = names(["WD1", "WD2", "WD3", "WD4"]);
 const U_CATEGORIES = ["U-8", "U-10", "U-12M", "U-12W", "U-15M", "U-15W"];
 
 const POINT_TABLE = {
@@ -143,8 +146,8 @@ export const TRYOUT_PAGE: EventPageContent = {
     "挑戦するDivisionの指定6課題を登り、完登した数で昇格・残留・降格が決まります。決まったDivisionは、マイページ・Ranking・THE NORTH FACE CUP のエントリーに自動で反映されます。",
   ],
   categories: [
-    { title: "Men's（挑戦できるDivision）", items: ["MD2", "MD3", "MD4", "MD5"] },
-    { title: "Women's（挑戦できるDivision）", items: ["WD2", "WD3", "WD4"] },
+    { title: "Men's（挑戦できるDivision）", items: names(["MD2", "MD3", "MD4", "MD5"]) },
+    { title: "Women's（挑戦できるDivision）", items: names(["WD2", "WD3", "WD4"]) },
   ],
   steps: [
     { title: "選手登録", text: "無料で登録します。Divisionは「未確定」のままで大丈夫です。" },
@@ -165,9 +168,9 @@ export const TRYOUT_PAGE: EventPageContent = {
     {
       title: "判定のしかた",
       items: [
-        "6課題すべて完登：1つ上のDivisionに昇格（MD2・WD2 からは Division 1 へ）。",
+        "6課題すべて完登：1つ上のDivisionに昇格（Men‘s Division 2・Women‘s Division 2 からは Division 1 へ）。",
         "4〜5課題：そのまま。初めての方は挑戦したDivisionに決まります。",
-        "0〜3課題：1つ下のDivisionに降格。MD5・WD4 の方はそのままです。",
+        "0〜3課題：1つ下のDivisionに降格。Men‘s Division 5・Women‘s Division 4 の方はそのままです。",
       ],
     },
     {
@@ -190,13 +193,13 @@ export const TRYOUT_PAGE: EventPageContent = {
       caption: "Divisionごとの指定課題",
       head: ["Division", "課題番号"],
       rows: [
-        ["MD2", "No.9〜14"],
-        ["MD3", "No.7〜12"],
-        ["MD4", "No.5〜10"],
-        ["MD5", "No.3〜8"],
-        ["WD2", "No.5〜10"],
-        ["WD3", "No.3〜8"],
-        ["WD4", "No.1〜6"],
+        [divisionName("MD2"), "No.9〜14"],
+        [divisionName("MD3"), "No.7〜12"],
+        [divisionName("MD4"), "No.5〜10"],
+        [divisionName("MD5"), "No.3〜8"],
+        [divisionName("WD2"), "No.5〜10"],
+        [divisionName("WD3"), "No.3〜8"],
+        [divisionName("WD4"), "No.1〜6"],
       ],
     },
   ],

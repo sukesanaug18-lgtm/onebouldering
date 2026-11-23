@@ -4,12 +4,12 @@ import { Suspense } from "react";
 import { ClipboardCheck, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { shortDivision, UNDECIDED_DIVISION } from "@/domain/division";
+import { divisionName, UNDECIDED_DIVISION } from "@/domain/division";
 import { decideEntry, type EntryOption } from "@/domain/entry";
 import { EntryShell } from "@/features/entry/components/EntryShell";
 import { VenuePicker } from "@/features/entry/components/VenuePicker";
 import { getVenue, param, type VenueDetail } from "@/features/entry/queries";
-import { getVenues } from "@/features/ranking/queries";
+import { getPublicVenues } from "@/features/ranking/queries";
 import { getCurrentUser } from "@/server/auth";
 
 export const metadata: Metadata = { title: "会場エントリー", robots: { index: false } };
@@ -57,7 +57,7 @@ async function Entry({ searchParams }: { searchParams: PageProps<"/entry">["sear
             {user.name} さん（
             {user.division === UNDECIDED_DIVISION
               ? "Division 未確定"
-              : shortDivision(user.division)}
+              : divisionName(user.division)}
             ）。参加するプログラムを選んでください。
           </p>
           {decision.options.map((o) => (
@@ -139,7 +139,7 @@ function NeedsTryout() {
 }
 
 async function NoVenue({ unknown }: { unknown: boolean }) {
-  const venues = await getVenues();
+  const venues = await getPublicVenues();
   return (
     <EntryShell eyebrow="Check-in" title="会場エントリー">
       <Card padding="lg" className="bg-white">

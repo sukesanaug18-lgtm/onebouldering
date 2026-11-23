@@ -76,3 +76,12 @@ export function shortDivision(raw: string): string {
 export function isRankedDivision(div: string): boolean {
   return Boolean(div) && div !== "-" && div !== "不明" && div !== UNDECIDED_DIVISION;
 }
+
+/**
+ * Official name for anything shown on screen or in a file: "Men‘s Division 3", "U-15M",
+ * and "未確定" for undecided. Short codes (MD3) are only for URLs and stored data.
+ */
+export function divisionName(raw: string): string {
+  const canon = canonicalDivision(raw);
+  return canon === UNDECIDED_DIVISION ? "未確定" : canon;
+}

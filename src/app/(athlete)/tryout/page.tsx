@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { shortDivision, UNDECIDED_DIVISION } from "@/domain/division";
+import { divisionName } from "@/domain/division";
 import { categoryForGender, isUCategory } from "@/domain/tryout";
 import { EntryShell } from "@/features/entry/components/EntryShell";
 import { VenuePicker } from "@/features/entry/components/VenuePicker";
 import { getVenue, param } from "@/features/entry/queries";
-import { getVenues } from "@/features/ranking/queries";
+import { getPublicVenues } from "@/features/ranking/queries";
 import { TryoutForm } from "@/features/tryout/components/TryoutForm";
 import { requireUser } from "@/server/auth";
 
@@ -23,7 +23,7 @@ async function Tryout({ searchParams }: { searchParams: PageProps<"/tryout">["se
   const venue = await getVenue(venueId);
 
   if (!venue) {
-    const venues = await getVenues();
+    const venues = await getPublicVenues();
     return (
       <EntryShell eyebrow="Division Tryout" title="Tryout を受けるジム">
         <Card padding="lg" className="bg-white">
@@ -65,7 +65,7 @@ async function Tryout({ searchParams }: { searchParams: PageProps<"/tryout">["se
       <p className="mb-8 text-[15px] text-text-2">
         {user.name} さん ・ いまのDivision：
         <span className="font-bold text-text">
-          {user.division === UNDECIDED_DIVISION ? "未確定" : shortDivision(user.division)}
+          {divisionName(user.division)}
         </span>
       </p>
       <TryoutForm

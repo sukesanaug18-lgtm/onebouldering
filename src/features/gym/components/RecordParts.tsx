@@ -1,10 +1,9 @@
 import NextForm from "next/form";
 import { Search } from "lucide-react";
-import { shortDivision, UNDECIDED_DIVISION } from "@/domain/division";
+import { divisionName } from "@/domain/division";
 import { cn } from "@/lib/cn";
 
-export const divisionLabel = (div: string) =>
-  div === UNDECIDED_DIVISION ? "未確定" : shortDivision(div);
+export const divisionLabel = divisionName;
 
 /** "2026-11-21T03:49:36Z" → "11/21 12:49" (Japan time). */
 export function shortDateTime(iso: string): string {

@@ -1,5 +1,10 @@
 import Link from "next/link";
-import { CANONICAL_DIVISIONS, canonicalDivision, shortDivision } from "@/domain/division";
+import {
+  CANONICAL_DIVISIONS,
+  canonicalDivision,
+  divisionName,
+  shortDivision,
+} from "@/domain/division";
 import { promotionCutoff, type RankingEntry } from "@/domain/ranking";
 import { cn } from "@/lib/cn";
 import { CURRENT_SEASON_ID } from "@/lib/season";
@@ -129,7 +134,7 @@ export async function RankingBoard({
         <FilterRow label="Division">
           {divisions.map((d) => (
             <Chip key={d} href={href({ ...base, div: shortDivision(d) })} active={d === division}>
-              {shortDivision(d)}
+              {divisionName(d)}
             </Chip>
           ))}
         </FilterRow>
@@ -151,7 +156,7 @@ export async function RankingBoard({
           <>
             <div className="mb-3 flex items-baseline justify-between gap-4">
               <h2 className="font-display text-xl font-bold">
-                {shortDivision(division)}
+                {divisionName(division)}
                 <span className="ml-2 text-sm font-medium text-text-3">
                   {view === "region" ? region : view === "gym" ? gym?.name : "全国"}
                 </span>
@@ -161,7 +166,7 @@ export async function RankingBoard({
             <RankingTable
               entries={entries.slice(0, SHOW_LIMIT)}
               cutoff={cutoff}
-              caption={`${shortDivision(division)} のランキング${cutoff ? `（上位${cutoff}名が自動昇格圏内）` : ""}`}
+              caption={`${divisionName(division)} のランキング${cutoff ? `（上位${cutoff}名が自動昇格圏内）` : ""}`}
             />
             {entries.length > SHOW_LIMIT && (
               <p className="mt-3 text-sm text-text-3">上位{SHOW_LIMIT}名を表示しています。</p>

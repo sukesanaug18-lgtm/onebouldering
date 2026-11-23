@@ -1,11 +1,11 @@
 import { Button } from "@/components/ui/Button";
-import { shortDivision, UNDECIDED_DIVISION } from "@/domain/division";
+import { divisionName } from "@/domain/division";
 import { JUDGMENT_LABEL } from "@/domain/tryout";
 import { cn } from "@/lib/cn";
 import { getMyCompetitions, getMyTnfc, getMyTryouts } from "../queries";
 import { MySection, shortDate } from "./MySection";
 
-const label = (div: string) => (div === UNDECIDED_DIVISION ? "未確定" : shortDivision(div));
+const label = divisionName;
 
 /** Every Tryout the player took, newest first. */
 export async function TryoutHistory({ userId }: { userId: string }) {
@@ -29,7 +29,7 @@ export async function TryoutHistory({ userId }: { userId: string }) {
               </span>
             </div>
             <p className="mt-1 text-sm text-text-2">
-              {t.venueName} ・ {t.challenged} に挑戦 ・ {t.completedCount}/6 完登
+              {t.venueName} ・ {label(t.challenged)} に挑戦 ・ {t.completedCount}/6 完登
             </p>
           </li>
         ))}

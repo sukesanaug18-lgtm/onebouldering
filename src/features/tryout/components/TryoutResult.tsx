@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { shortDivision, UNDECIDED_DIVISION } from "@/domain/division";
+import { divisionName, UNDECIDED_DIVISION } from "@/domain/division";
 import { JUDGMENT_LABEL } from "@/domain/tryout";
 import type { TryoutOutcome } from "../schemas";
 
@@ -27,17 +27,17 @@ export function TryoutResultPanel({
     <div className="space-y-6">
       <div className="rounded-2xl border border-line bg-white p-8 text-center" role="status">
         <p className="text-sm text-text-3">
-          {result.challenged} に挑戦 ・ {result.completedProblemNos.length}/6 完登
+          {divisionName(result.challenged)} に挑戦 ・ {result.completedProblemNos.length}/6 完登
         </p>
         <p className="mt-2 text-2xl font-bold">{JUDGMENT_LABEL[result.judgment]}</p>
         <p className="mt-6 flex items-center justify-center gap-4 font-display text-4xl font-extrabold">
           {first ? (
             <span className="text-base font-bold text-text-3">未確定</span>
           ) : (
-            <span className="text-text-3">{shortDivision(result.oldDivision)}</span>
+            <span className="text-text-3">{divisionName(result.oldDivision)}</span>
           )}
           <ArrowRight className="size-6 text-text-3" aria-label="から" />
-          <span>{shortDivision(result.newDivision)}</span>
+          <span>{divisionName(result.newDivision)}</span>
         </p>
         <p className="mt-6 text-[15px] text-text-2">
           新しいDivisionは、マイページ・Ranking・THE NORTH FACE CUP のエントリーに反映されました。

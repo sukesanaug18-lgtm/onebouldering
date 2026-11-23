@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { divisionName } from "@/domain/division";
 import Link from "next/link";
 import { ChevronRight, QrCode, ShieldCheck, Smartphone, UserRoundPlus } from "lucide-react";
 import { FadeIn } from "@/components/motion/FadeIn";
@@ -226,8 +227,8 @@ export default function JoinPage() {
         />
         <div className="mt-10 grid gap-4 md:grid-cols-3">
           {[
-            { title: "Men's", items: ["MD1", "MD2", "MD3", "MD4", "MD5"] },
-            { title: "Women's", items: ["WD1", "WD2", "WD3", "WD4"] },
+            { title: "Men's", items: ["MD1", "MD2", "MD3", "MD4", "MD5"].map(divisionName) },
+            { title: "Women's", items: ["WD1", "WD2", "WD3", "WD4"].map(divisionName) },
             {
               title: "Uカテゴリー（ジュニア）",
               items: ["U-8", "U-10", "U-12M", "U-12W", "U-15M", "U-15W"],

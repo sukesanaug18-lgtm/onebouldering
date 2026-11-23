@@ -3,6 +3,7 @@ import { CalendarDays, ChevronRight } from "lucide-react";
 import { FadeIn } from "@/components/motion/FadeIn";
 import { Section } from "@/components/layout/Section";
 import { Card } from "@/components/ui/Card";
+import { RankingLogo } from "@/components/ui/RankingLogo";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { EVENTS } from "@/content/events";
 
@@ -15,6 +16,7 @@ export function EventCards() {
         {EVENTS.map((event, i) => (
           <FadeIn as="li" key={event.key} delay={i * 0.06}>
             <Card accent={event.key} interactive padding="lg" className="flex h-full flex-col">
+              {event.key === "ranking" && <RankingLogo decorative className="mb-4 h-14" />}
               <p className="text-sm font-bold text-text-3">{event.kind}</p>
               <h3 className="mt-1 font-display text-2xl font-bold tracking-tight">
                 <Link

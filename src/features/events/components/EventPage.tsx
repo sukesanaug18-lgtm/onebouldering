@@ -4,6 +4,7 @@ import { Section } from "@/components/layout/Section";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { RankingLogo } from "@/components/ui/RankingLogo";
 import { Phrase } from "@/components/ui/Phrase";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { cn } from "@/lib/cn";
@@ -12,7 +13,7 @@ import type { EventPageContent } from "../types";
 const ACCENT_TEXT = {
   tnfc: "text-text",
   tryout: "text-event-tryout",
-  ranking: "text-[#a16207]", // yellow-700: brand yellow is too light for text (6-5)
+  ranking: "text-event-ranking-text", // the logo orange is too light for text (6-5)
 } as const;
 
 const IN_PAGE = [
@@ -31,6 +32,7 @@ export function EventPage({ content: c }: { content: EventPageContent }) {
       {/* Header */}
       <section className="border-b border-line">
         <div className="mx-auto max-w-[1200px] px-5 pt-16 pb-12 md:pt-24 md:pb-16">
+          {c.key === "ranking" && <RankingLogo decorative className="mb-6 h-20 md:h-24" />}
           <Badge event={c.key}>{c.kind}</Badge>
           <h1 className="mt-5 font-display text-[clamp(2.25rem,1.5rem+3vw,4rem)] leading-[1.1] font-bold tracking-tight">
             {c.name}

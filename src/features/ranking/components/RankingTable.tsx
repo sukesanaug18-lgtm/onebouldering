@@ -41,7 +41,7 @@ export function RankingTable({
                   <span
                     className={cn(
                       "flex size-9 items-center justify-center rounded-full font-display text-base font-extrabold tabular-nums",
-                      row.rank === 1 && "bg-brand text-text",
+                      row.rank === 1 && "bg-event-ranking text-text",
                       row.rank === 2 && "bg-[#e5e7eb] text-text",
                       row.rank === 3 && "bg-[#f3e1cf] text-text",
                       row.rank > 3 && "text-text-2",

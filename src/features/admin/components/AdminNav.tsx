@@ -8,6 +8,7 @@ import { cn } from "@/lib/cn";
 const ITEMS = [
   { href: "/admin", label: "ダッシュボード", exact: true },
   { href: "/admin/members", label: "会員" },
+  { href: "/admin/venues", label: "会場" },
 ] as const;
 
 /** Sideways tabs on phones, a vertical list from lg up. */

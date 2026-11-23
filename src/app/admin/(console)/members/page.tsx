@@ -3,7 +3,7 @@ import NextForm from "next/form";
 import Link from "next/link";
 import { ChevronRight, Search } from "lucide-react";
 import { Suspense } from "react";
-import { shortDivision, UNDECIDED_DIVISION } from "@/domain/division";
+import { divisionName } from "@/domain/division";
 import { PAGE_SIZE, searchMembers } from "@/features/member/queries";
 import { requireAdmin } from "@/server/admin-session";
 
@@ -89,7 +89,7 @@ async function Results({ searchParams }: { searchParams: Props["searchParams"] }
                       </span>
                     </span>
                     <span className="shrink-0 font-display text-sm font-bold">
-                      {m.division === UNDECIDED_DIVISION ? "未確定" : shortDivision(m.division)}
+                      {divisionName(m.division)}
                     </span>
                     <ChevronRight className="size-4 shrink-0 text-text-3" aria-hidden />
                   </Link>

@@ -3,7 +3,7 @@
 import { startTransition, useActionState, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/Button";
 import { FormMessage } from "@/components/ui/Field";
-import { shortDivision } from "@/domain/division";
+import { divisionName, shortDivision } from "@/domain/division";
 import {
   CHALLENGEABLE,
   evaluateTryout,
@@ -174,7 +174,7 @@ function TryoutAttempt({
               sub={d === recommended ? "おすすめ" : tryoutProblemsLabel(d)}
               required
             >
-              {d}
+              {divisionName(d)}
             </ChoiceChip>
           ))}
         </div>
@@ -185,7 +185,7 @@ function TryoutAttempt({
         title="完登した課題"
         lead={
           challenged
-            ? `${challenged} の指定課題は ${tryoutProblemsLabel(challenged)} です。完登した課題を選んでください。`
+            ? `${divisionName(challenged)} の指定課題は ${tryoutProblemsLabel(challenged)} です。完登した課題を選んでください。`
             : "先に挑戦するDivisionを選んでください。"
         }
       >
@@ -214,7 +214,7 @@ function TryoutAttempt({
             <p className="text-sm text-text-3">このまま送信すると</p>
             <p className="mt-1 text-xl font-bold">
               {problems.length}/6 完登 ・ {JUDGMENT_LABEL[preview.judgment]}
-              <span className="ml-2 font-display">→ {shortDivision(preview.newDivision)}</span>
+              <span className="ml-2 font-display">→ {divisionName(preview.newDivision)}</span>
             </p>
             {preview.resetCompetitionPoints && (
               <p className="mt-2 text-sm text-text-2">

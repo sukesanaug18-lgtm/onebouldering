@@ -260,12 +260,14 @@ onebouldering/
 | `--border` | 線 | `rgb(229 231 235 / 0.8)`（gray-200/80） |
 | `--brand` | ONE Bouldering のイエロー | `#FACC15`（面・線・アクセントに使い、文字色には使わない） |
 | `--event-tnfc` | TNFC | `#1D1D1F`（黒） |
-| `--event-tryout` | Division Tryout | `#2563EB`（青） |
-| `--event-ranking` | Ranking | `#FACC15`（黄） |
+| `--event-tryout` | Division Tryout | `#000000`（黒基調） |
+| `--event-ranking` | Ranking | `#FF8C3F`（オレンジ基調・ロゴの色。文字には `--event-ranking-text` `#C2410C`） |
 | 状態 | 承認済み／確認待ち／差し戻し | 緑 `#10B981` ／ 黄 `#CA8A04` ／ 赤 `#EF4444` |
 
 - 文字と背景のコントラストは WCAG AA（4.5:1）以上。
 - イベント色はバッジ・カード上の細い線・アイコンにだけ使い、面いっぱいには塗らない。
+- Ranking を出す場所（トップのイベントカード・ランキングページ・Ranking のイベントページ）には公式ロゴ（`public/images/onebouldering_ranking_logo.png`、暗い背景は `_white`）を置く。部品は `RankingLogo`。
+- Division は画面・CSV とも現在のサイトの正式名称（"Men‘s Division 3" など）で表示する。MD3 などの短い記号は URL と保存データにだけ使う（`divisionName()`）。
 
 ### 6-6. ボタン
 | 種類 | 見た目 |

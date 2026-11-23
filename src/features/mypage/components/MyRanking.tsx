@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { shortDivision, UNDECIDED_DIVISION } from "@/domain/division";
+import { divisionName, shortDivision, UNDECIDED_DIVISION } from "@/domain/division";
 import { myRankings, type MyRank } from "@/domain/ranking";
 import type { ScoreStatus } from "@/domain/score";
 import { getRanking, getVenues } from "@/features/ranking/queries";
@@ -47,6 +47,7 @@ export async function MyRanking({
   const { overall, regions } = myRankings(ranking, userId, division);
   const venueName = new Map(venues.map((v) => [v.id, v.name]));
   const div = shortDivision(division);
+  const name = divisionName(division);
 
   return (
     <MySection
@@ -59,7 +60,7 @@ export async function MyRanking({
       }
     >
       <div className="grid gap-4 sm:grid-cols-2">
-        <Place label={`総合（${div}）`} rank={overall} />
+        <Place label={`総合（${name}）`} rank={overall} />
         <div>
           <p className="text-sm text-text-3">地域別</p>
           {regions.length === 0 ? (

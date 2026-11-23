@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { RankingLogo } from "@/components/ui/RankingLogo";
 import { RankingBoard, RankingBoardSkeleton } from "@/features/ranking/components/RankingBoard";
 import { CURRENT_SEASON_ID, seasonLabel } from "@/lib/season";
 
@@ -17,7 +17,7 @@ export default function RankingPage({ searchParams }: PageProps<"/ranking">) {
     <main className="mx-auto w-full max-w-[1200px] px-5 pt-16 pb-24 md:pt-24">
       <div className="flex flex-wrap items-end justify-between gap-6">
         <div>
-          <Badge event="ranking">ONE bouldering Ranking</Badge>
+          <RankingLogo className="h-20 md:h-24" />
           <h1 className="mt-4 text-[clamp(2rem,1.4rem+2.6vw,3.5rem)] leading-[1.2] font-bold tracking-tight">
             ランキング
           </h1>

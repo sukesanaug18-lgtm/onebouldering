@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { Suspense } from "react";
 import { Card } from "@/components/ui/Card";
-import { shortDivision, UNDECIDED_DIVISION } from "@/domain/division";
+import { divisionName } from "@/domain/division";
 import { JUDGMENT_LABEL } from "@/domain/tryout";
 import { MemberForm } from "@/features/member/components/MemberForm";
 import { TempPinCard } from "@/features/member/components/TempPinCard";
@@ -17,7 +17,7 @@ import { requireAdmin } from "@/server/admin-session";
 
 export const metadata: Metadata = { title: "会員の詳細" };
 
-const label = (d: string) => (d === UNDECIDED_DIVISION ? "未確定" : shortDivision(d));
+const label = divisionName;
 const STATUS: Record<string, string> = {
   Approved: "承認済み",
   Pending: "承認待ち",
@@ -77,7 +77,7 @@ async function History({ id }: { id: string }) {
               >
                 <span className="text-sm text-text-2">
                   <span className="tabular-nums">{shortDate(t.at)}</span> ・ {t.venueName} ・{" "}
-                  {t.challenged} {t.completedCount}/6
+                  {divisionName(t.challenged)} {t.completedCount}/6
                 </span>
                 <span className="text-sm font-bold whitespace-nowrap">
                   {JUDGMENT_LABEL[t.judgment] ?? t.judgment} {label(t.oldDivision)} →{" "}

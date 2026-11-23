@@ -12,7 +12,7 @@ import { SampleNote } from "./SampleNote";
 
 const STATUS: Record<UpcomingItem["status"], { label: string; dot: string }> = {
   live: { label: "開催中", dot: "bg-status-approved" },
-  open: { label: "受付中", dot: "bg-event-tryout" },
+  open: { label: "受付中", dot: "bg-text" },
   soon: { label: "まもなく", dot: "bg-text-3" },
 };
 
