@@ -15,6 +15,7 @@ import { getVenue } from "@/features/entry/queries";
 import { CURRENT_SEASON_ID } from "@/lib/season";
 import { getCurrentUser } from "@/server/auth";
 import { adminDb } from "@/server/firebase-admin";
+import { readCheckIn } from "@/server/venue-pass";
 import { rebuildRankingCache } from "@/server/ranking-cache";
 import { syncTnfcEntries } from "@/server/tnfc-sync";
 import { TryoutSchema, type TryoutState } from "./schemas";
@@ -56,6 +57,13 @@ export async function submitTryout(_prev: TryoutState, formData: FormData): Prom
   const venue = await getVenue(venueId);
   if (!venue?.programs.hasTryout) {
     return { message: "このジムでは、いま Division Tryout を開催していません。" };
+  }
+  const checkIn = await readCheckIn(venue.id);
+  if (!checkIn) {
+    return {
+      message:
+        "ジムにいることの確認が切れています。ページを開き直して、QR コードか位置情報で確認してください。",
+    };
   }
 
   const db = adminDb();
@@ -132,6 +140,7 @@ export async function submitTryout(_prev: TryoutState, formData: FormData): Prom
         oldDivision: result.oldDivision,
         newDivision: result.newDivision,
         compPointsReset: result.resetCompetitionPoints,
+        checkIn,
         status: "confirmed",
         createdAt: now,
         updatedAt: now,

@@ -58,6 +58,27 @@ const venues = GYMS.map((g, i) => {
 const GYM_PASSWORD_HASH = await hashPin("gym-demo-2027");
 for (const v of venues) Object.assign(v, { gymPasswordHash: GYM_PASSWORD_HASH });
 
+// Check-in for Tryout / Ranking input (Emulator only): the QR key is "demo-<venue id>" and each
+// gym gets a made-up position near its region's main city.
+const REGION_CENTER: Record<string, [number, number]> = {
+  北海道: [43.0621, 141.3544],
+  東北: [38.2682, 140.8694],
+  関東: [35.6812, 139.7671],
+  東海: [35.1709, 136.8815],
+  関西: [34.7025, 135.4959],
+  九州: [33.5902, 130.4017],
+};
+venues.forEach((v, i) => {
+  const [lat, lng] = REGION_CENTER[v.region] ?? [35.6812, 139.7671];
+  Object.assign(v, {
+    qrKey: `demo-${v.id}`,
+    location: {
+      lat: Math.round((lat + (i % 5) * 0.01) * 1e4) / 1e4,
+      lng: Math.round((lng + Math.floor(i / 5) * 0.01) * 1e4) / 1e4,
+    },
+  });
+});
+
 const DIVISIONS = [
   ["Men‘s Division 1", 1500],
   ["Men‘s Division 2", 1300],
@@ -285,6 +306,58 @@ const demoExtras: [string, string, Record<string, unknown>][] = [
     },
   ],
 ];
+
+// A qualifier round before its deadline, for the office TNFC screens (diagram B-4): 36 entries
+// with a few unpaid, renamed, Division-changed, undecided and cancelled ones.
+const ROUND2 = `tnfc${SEASON}_round2_${g3.id}`;
+const round2Name = `THE NORTH FACE CUP ${SEASON} ROUND2`;
+demoExtras.push([
+  "tnfc_rounds",
+  ROUND2,
+  {
+    seasonId: SEASON,
+    roundNumber: 2,
+    roundName: round2Name,
+    venueId: g3.id,
+    venueName: g3.name,
+    eventDate: "2027-01-24",
+    entryDeadline: "2027-01-10",
+    areaCount: 4,
+    capacity: 60,
+    previousFinalBibNo: 120,
+    judgePassword: "0000",
+    status: "entry_open",
+    categoryQuotas: {},
+    createdAt: now,
+    updatedAt: now,
+  },
+]);
+for (const [i, u] of [...users.slice(0, 35), users.find((x) => x.id === "19999")!].entries()) {
+  const division = String(u.division);
+  const renamed = i % 11 === 3;
+  const oldDivision = i % 13 === 5 ? "Men‘s Division 5" : division;
+  demoExtras.push([
+    "tnfc_entries",
+    `${ROUND2}_${u.id}`,
+    {
+      seasonId: SEASON,
+      roundId: ROUND2,
+      roundName: round2Name,
+      venueId: g3.id,
+      venueName: g3.name,
+      userId: u.id,
+      registeredName: renamed ? `旧姓選手${i}` : u.name,
+      currentUserName: renamed ? `旧姓選手${i}` : u.name,
+      furigana: `さんぷる ${String(i).padStart(2, "0")}`,
+      division: oldDivision,
+      email: `player${u.id}@example.test`,
+      zeusOrderNo: i % 6 === 2 ? "" : `ZE-${1000 + i}`,
+      status: i === 7 ? "cancelled" : i % 6 === 2 ? "pending_payment" : "confirmed",
+      source: "csv",
+      createdAt: now,
+    },
+  ]);
+}
 
 const ranking = aggregateRankingData({
   users,

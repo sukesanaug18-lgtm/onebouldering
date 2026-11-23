@@ -6,6 +6,7 @@ import { FormMessage } from "@/components/ui/Field";
 import { divisionName, UNDECIDED_DIVISION } from "@/domain/division";
 import { parsePrefill } from "@/domain/score";
 import { EntryShell } from "@/features/entry/components/EntryShell";
+import { VenueGate } from "@/features/entry/components/VenueGate";
 import { VenuePicker } from "@/features/entry/components/VenuePicker";
 import { getVenue, param } from "@/features/entry/queries";
 import { getPublicVenues } from "@/features/ranking/queries";
@@ -13,6 +14,7 @@ import { ScoreSheet } from "@/features/score/components/ScoreSheet";
 import { getMyScore, getPointMap, type MyScore } from "@/features/score/queries";
 import { CURRENT_SEASON_ID } from "@/lib/season";
 import { requireUser } from "@/server/auth";
+import { venueCheckIn } from "@/server/venue-pass";
 
 export const metadata: Metadata = { title: "Ranking スコア提出", robots: { index: false } };
 
@@ -58,6 +60,14 @@ async function Score({ searchParams }: { searchParams: PageProps<"/score">["sear
             <Button href={`/entry?venue=${encodeURIComponent(venue.id)}`}>このジムの受付へ</Button>
           </div>
         </Card>
+      </EntryShell>
+    );
+  }
+
+  if (!(await venueCheckIn(venue.id))) {
+    return (
+      <EntryShell eyebrow="Ranking" venue={venue}>
+        <VenueGate venue={venue} program="Ranking" qr={param(sp.qr)} />
       </EntryShell>
     );
   }

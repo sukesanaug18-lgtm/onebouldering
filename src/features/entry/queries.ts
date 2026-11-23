@@ -1,9 +1,24 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { resolveVenuePrograms, type VenuePrograms } from "@/domain/entry";
+import { isLatLng, type LatLng } from "@/domain/venue-pass";
 import { adminDb } from "@/server/firebase-admin";
 
-export type VenueDetail = { id: string; name: string; region: string; programs: VenuePrograms };
+export type VenueDetail = {
+  id: string;
+  name: string;
+  region: string;
+  programs: VenuePrograms;
+  /** Gym position for the location check-in; null when the office has not set it. */
+  location: LatLng | null;
+};
+
+/** Stored as { location: { lat, lng } }; the old app kept lat / lng at the top level. */
+export function venueLocation(v: FirebaseFirestore.DocumentData): LatLng | null {
+  const src = (v.location ?? v) as Record<string, unknown>;
+  const loc = { lat: Number(src.lat), lng: Number(src.lng) };
+  return isLatLng(loc) ? loc : null;
+}
 
 /** Venue ids come from a QR code, so only accept simple slugs. */
 const VENUE_ID = /^[A-Za-z0-9_-]{1,64}$/;
@@ -21,6 +36,7 @@ async function loadVenue(id: string): Promise<VenueDetail | null> {
     name: String(v.name ?? v["会場名"] ?? snap.id),
     region: String(v.region ?? v["地域"] ?? "未定"),
     programs: resolveVenuePrograms(v),
+    location: venueLocation(v),
   };
 }
 

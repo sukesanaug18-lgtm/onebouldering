@@ -2,6 +2,7 @@ import "server-only";
 import { getApps, initializeApp, type App } from "firebase-admin/app";
 import { getFirestore, type Firestore } from "firebase-admin/firestore";
 import { getAuth, type Auth } from "firebase-admin/auth";
+import { getStorage } from "firebase-admin/storage";
 
 /**
  * Server-only Firebase Admin SDK. All Firestore reads/writes go through here.
@@ -11,7 +12,10 @@ import { getAuth, type Auth } from "firebase-admin/auth";
 function getAdminApp(): App {
   return (
     getApps()[0] ??
-    initializeApp({ projectId: process.env.FIREBASE_PROJECT_ID ?? "demo-onebouldering" })
+    initializeApp({
+      projectId: process.env.FIREBASE_PROJECT_ID ?? "demo-onebouldering",
+      storageBucket: process.env.FIREBASE_STORAGE_BUCKET ?? "demo-onebouldering.appspot.com",
+    })
   );
 }
 
@@ -21,4 +25,9 @@ export function adminDb(): Firestore {
 
 export function adminAuth(): Auth {
   return getAuth(getAdminApp());
+}
+
+/** Storage bucket for office uploads (FIREBASE_STORAGE_EMULATOR_HOST routes to the emulator). */
+export function adminBucket() {
+  return getStorage(getAdminApp()).bucket();
 }

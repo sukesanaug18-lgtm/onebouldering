@@ -14,6 +14,7 @@ import { getVenue } from "@/features/entry/queries";
 import { CURRENT_SEASON_ID } from "@/lib/season";
 import { getCurrentUser } from "@/server/auth";
 import { adminDb } from "@/server/firebase-admin";
+import { readCheckIn } from "@/server/venue-pass";
 import { getPointMap, scoreDocId } from "./queries";
 
 // Ranking score submission (workflow diagram B-2). Saved as Pending; the gym approves it.
@@ -42,6 +43,13 @@ export async function submitScore(_prev: ScoreState, formData: FormData): Promis
   const venue = await getVenue(parsed.data.venue);
   if (!venue?.programs.hasRanking) {
     return { message: "このジムでは、いま Ranking を開催していません。" };
+  }
+  const checkIn = await readCheckIn(venue.id);
+  if (!checkIn) {
+    return {
+      message:
+        "ジムにいることの確認が切れています。ページを開き直して、QR コードか位置情報で確認してください。",
+    };
   }
 
   const seasonId = CURRENT_SEASON_ID;
@@ -82,6 +90,7 @@ export async function submitScore(_prev: ScoreState, formData: FormData): Promis
           approvedTotalPoints: totalPoints(locked, points),
           totalPoints: sum,
           合計ポイント: String(sum),
+          checkIn,
           status: "Pending",
           承認ステータス: "Pending",
           rejectReason: "",

@@ -3,7 +3,7 @@ import { entryUrl, getAdminVenue } from "@/features/venue/queries";
 import { getAdmin } from "@/server/admin-session";
 
 /**
- * Unified QR code for a venue (/entry?venue=…) as SVG (print) or PNG (?format=png, 1200px).
+ * The gym's own QR code (/checkin?venue=…&k=…) as SVG (print) or PNG (?format=png, 1200px).
  * Office only. Error correction "M" leaves room for a logo-free POP at A4 size.
  */
 export async function GET(req: Request, ctx: RouteContext<"/api/admin/venues/[id]/qr">) {
@@ -11,8 +11,9 @@ export async function GET(req: Request, ctx: RouteContext<"/api/admin/venues/[id
   const { id } = await ctx.params;
   const venue = await getAdminVenue(id);
   if (!venue) return new Response("会場が見つかりません。", { status: 404 });
+  if (!venue.qrKey) return new Response("先に QR コードを発行してください。", { status: 409 });
 
-  const url = entryUrl(venue.id);
+  const url = entryUrl(venue.id, venue.qrKey);
   const png = new URL(req.url).searchParams.get("format") === "png";
   const headers = {
     "Cache-Control": "private, no-store",

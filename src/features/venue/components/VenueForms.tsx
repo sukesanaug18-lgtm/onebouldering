@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/Button";
 import { Field, FormMessage } from "@/components/ui/Field";
 import {
   createVenue,
+  issueQrKey,
   setGymPassword,
+  type QrKeyState,
   updateVenue,
   type PasswordState,
   type VenueFormState,
@@ -68,6 +70,25 @@ export function VenueForm({ venue, regions }: { venue: AdminVenue; regions: stri
           ))}
         </datalist>
       </div>
+      <Field
+        label="ジムの位置（緯度, 経度）"
+        name="location"
+        defaultValue={venue.location ? `${venue.location.lat}, ${venue.location.lng}` : ""}
+        placeholder="例：35.6812, 139.7671"
+        hint="Google マップでジムを右クリックすると出る数字をそのまま貼れます。位置情報での確認（ジムから約300m以内）に使います。空欄のときは QR だけで確認します。"
+        error={e.location}
+        inputMode="decimal"
+      />
+      {venue.location && (
+        <a
+          href={`https://www.google.com/maps?q=${venue.location.lat},${venue.location.lng}`}
+          target="_blank"
+          rel="noreferrer"
+          className="-mt-3 inline-block text-sm font-bold underline"
+        >
+          地図で場所を確かめる
+        </a>
+      )}
       <Toggle name="visible" defaultChecked={venue.visible}>
         サイトに表示する（オフにすると QR コードを読んでも「会場が見つかりません」になります）
       </Toggle>
@@ -203,6 +224,45 @@ export function GymPasswordCard({ id, hasPassword }: { id: string; hasPassword: 
         </>
       )}
       {state.message && <p className="text-sm font-bold text-[#b91c1c]">{state.message}</p>}
+    </form>
+  );
+}
+
+/** Issue the gym's own QR code, or replace it so old printed copies stop working. */
+export function QrKeyButton({ id, hasKey }: { id: string; hasKey: boolean }) {
+  const [state, action, pending] = useActionState<QrKeyState, FormData>(issueQrKey, {});
+  return (
+    <form
+      action={action}
+      onSubmit={(e) => {
+        if (
+          hasKey &&
+          !window.confirm(
+            "今貼ってある QR コードは使えなくなります（読んでも入力できなくなります）。作り直しますか？",
+          )
+        ) {
+          e.preventDefault();
+        }
+      }}
+      className="space-y-3"
+    >
+      <input type="hidden" name="id" value={id} />
+      {state.message && (
+        <FormMessage tone={state.ok ? "success" : "error"}>{state.message}</FormMessage>
+      )}
+      {hasKey ? (
+        <button
+          type="submit"
+          disabled={pending}
+          className="inline-flex min-h-11 items-center rounded-full border border-line bg-white px-5 text-sm font-bold hover:border-gray-300 disabled:opacity-40"
+        >
+          {pending ? "作り直し中…" : "QR コードを作り直す"}
+        </button>
+      ) : (
+        <Button type="submit" disabled={pending}>
+          {pending ? "発行中…" : "QR コードを発行する"}
+        </Button>
+      )}
     </form>
   );
 }

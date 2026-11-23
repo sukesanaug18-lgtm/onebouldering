@@ -5,18 +5,21 @@ import { Card } from "@/components/ui/Card";
 import { divisionName } from "@/domain/division";
 import { categoryForGender, isUCategory } from "@/domain/tryout";
 import { EntryShell } from "@/features/entry/components/EntryShell";
+import { VenueGate } from "@/features/entry/components/VenueGate";
 import { VenuePicker } from "@/features/entry/components/VenuePicker";
 import { getVenue, param } from "@/features/entry/queries";
 import { getPublicVenues } from "@/features/ranking/queries";
 import { TryoutForm } from "@/features/tryout/components/TryoutForm";
 import { requireUser } from "@/server/auth";
+import { venueCheckIn } from "@/server/venue-pass";
 
 export const metadata: Metadata = { title: "Division Tryout", robots: { index: false } };
 
 // Division Tryout at a gym (workflow diagram B-2). Reached from the venue QR (/entry).
 
 async function Tryout({ searchParams }: { searchParams: PageProps<"/tryout">["searchParams"] }) {
-  const venueId = param((await searchParams).venue);
+  const sp = await searchParams;
+  const venueId = param(sp.venue);
   const user = await requireUser(
     venueId ? `/tryout?venue=${encodeURIComponent(venueId)}` : "/tryout",
   );
@@ -60,13 +63,19 @@ async function Tryout({ searchParams }: { searchParams: PageProps<"/tryout">["se
     );
   }
 
+  if (!(await venueCheckIn(venue.id))) {
+    return (
+      <EntryShell eyebrow="Division Tryout" venue={venue}>
+        <VenueGate venue={venue} program="Tryout" qr={param(sp.qr)} />
+      </EntryShell>
+    );
+  }
+
   return (
     <EntryShell eyebrow="Division Tryout" venue={venue}>
       <p className="mb-8 text-[15px] text-text-2">
         {user.name} さん ・ いまのDivision：
-        <span className="font-bold text-text">
-          {divisionName(user.division)}
-        </span>
+        <span className="font-bold text-text">{divisionName(user.division)}</span>
       </p>
       <TryoutForm
         venueId={venue.id}

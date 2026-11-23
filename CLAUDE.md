@@ -205,6 +205,8 @@ onebouldering/
 ### ログイン後の選手画面
 統一QR `/entry?venue=…` から、ログイン状態・Division・会場の開催内容を見て Tryout か Ranking へ自動で案内する（図B-2の流れをそのまま実装）。
 
+**ジムにいることの確認（必須）**：Tryout と Ranking の入力・送信は、その日そのジムで確認が取れた選手だけができる。確認方法は2つ。①ジム専用QR `/checkin?venue=…&k=<秘密キー>`（キーは事務局の会場画面で発行・作り直し。作り直すと古いQRは無効）。②位置情報（ジムの座標から300m以内、GPS精度は最大200mまで加算。座標は事務局の会場画面で入力。選手の位置は保存しない）。確認結果は署名付き Cookie `ob_venue` に入り、日本時間の夜12時に切れる。画面だけでなく送信処理（submitScore / submitTryout）でも確認し、記録に `checkIn: "qr" | "location"` を残す。
+
 ### 店舗・事務局画面
 図B-3（店舗）、図B-4〜B-8（事務局）の機能をすべて実装する。見た目は公開ページと同じトークンを使い、情報の多い表は読みやすさを優先する。
 
@@ -267,6 +269,7 @@ onebouldering/
 - 文字と背景のコントラストは WCAG AA（4.5:1）以上。
 - イベント色はバッジ・カード上の細い線・アイコンにだけ使い、面いっぱいには塗らない。
 - Ranking を出す場所（トップのイベントカード・ランキングページ・Ranking のイベントページ）には公式ロゴ（`public/images/onebouldering_ranking_logo.png`、暗い背景は `_white`）を置く。部品は `RankingLogo`。
+- 3つのイベントページの一番上にはポスター画像を置く。差し替えは事務局画面「ポスター」（画像は Firebase Storage、設定は site_settings/event_posters）。
 - Division は画面・CSV とも現在のサイトの正式名称（"Men‘s Division 3" など）で表示する。MD3 などの短い記号は URL と保存データにだけ使う（`divisionName()`）。
 
 ### 6-6. ボタン

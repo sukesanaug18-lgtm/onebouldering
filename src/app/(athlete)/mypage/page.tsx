@@ -29,7 +29,7 @@ async function MyPageContent() {
     <div className="space-y-10">
       <LicenseCard user={user} seasonId={season} />
       {undecided && (
-        <div className="rounded-2xl border border-line border-l-4 border-l-event-tryout bg-white p-5">
+        <div className="rounded-2xl border border-l-4 border-line border-l-event-tryout bg-white p-5">
           <p className="font-bold">次は Division Tryout を受けましょう</p>
           <p className="mt-1 text-sm text-text-2">
             参加ジムの QR コードを読むと受けられます。Divisionが決まると、Ranking と THE NORTH FACE

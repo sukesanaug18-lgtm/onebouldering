@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { ClipboardCheck, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { FormMessage } from "@/components/ui/Field";
 import { divisionName, UNDECIDED_DIVISION } from "@/domain/division";
 import { decideEntry, type EntryOption } from "@/domain/entry";
 import { EntryShell } from "@/features/entry/components/EntryShell";
@@ -21,7 +22,9 @@ export const metadata: Metadata = { title: "会場エントリー", robots: { in
 const PATHS: Record<EntryOption["kind"], string> = { tryout: "/tryout", score: "/score" };
 
 async function Entry({ searchParams }: { searchParams: PageProps<"/entry">["searchParams"] }) {
-  const venueId = param((await searchParams).venue);
+  const sp = await searchParams;
+  const venueId = param(sp.venue);
+  const qr = param(sp.qr) === "error" ? "error" : param(sp.qr) ? "invalid" : undefined;
   const venue = await getVenue(venueId);
   if (!venue) return <NoVenue unknown={Boolean(venueId)} />;
 
@@ -35,11 +38,20 @@ async function Entry({ searchParams }: { searchParams: PageProps<"/entry">["sear
 
   // A single destination: go straight there, as the QR promises.
   if (decision.kind === "choose" && decision.options.length === 1) {
-    redirect(`${PATHS[decision.options[0].kind]}?venue=${encodeURIComponent(venue.id)}`);
+    const q = qr ? `&qr=${qr}` : "";
+    redirect(`${PATHS[decision.options[0].kind]}?venue=${encodeURIComponent(venue.id)}${q}`);
   }
 
   return (
     <EntryShell eyebrow="Check-in" venue={venue}>
+      {qr && decision.kind === "choose" && (
+        <div className="mb-4">
+          <FormMessage tone="error">
+            この QR コードは使えません。ジムに貼ってある最新の QR
+            コードを読むか、次の画面で位置情報で確認してください。
+          </FormMessage>
+        </div>
+      )}
       {decision.kind === "login" && <LoginFirst returnTo={here} />}
       {decision.kind === "needs-tryout-elsewhere" && <NeedsTryout />}
       {decision.kind === "nothing" && (
@@ -55,9 +67,7 @@ async function Entry({ searchParams }: { searchParams: PageProps<"/entry">["sear
         <div className="space-y-4">
           <p className="text-[15px] text-text-2">
             {user.name} さん（
-            {user.division === UNDECIDED_DIVISION
-              ? "Division 未確定"
-              : divisionName(user.division)}
+            {user.division === UNDECIDED_DIVISION ? "Division 未確定" : divisionName(user.division)}
             ）。参加するプログラムを選んでください。
           </p>
           {decision.options.map((o) => (

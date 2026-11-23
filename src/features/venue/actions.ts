@@ -11,6 +11,7 @@ import { hashPin } from "@/server/crypto";
 import { adminDb } from "@/server/firebase-admin";
 import { clearFailures } from "@/server/rate-limit";
 import { rebuildRankingCache } from "@/server/ranking-cache";
+import { isLatLng } from "@/domain/venue-pass";
 import { VENUE_ID } from "./queries";
 
 // Office edits to venues: programs and periods (drive the unified QR), visibility, and the gym
@@ -38,6 +39,23 @@ const VenueSchema = z.object({
   tryoutPeriod: period,
   hasRanking: z.boolean(),
   rankingPeriod: period,
+  location: z
+    .string()
+    .trim()
+    .max(80)
+    .transform((s, ctx) => {
+      if (!s) return null;
+      const m = s.match(/^(-?\d{1,3}(?:\.\d+)?)\s*[,、\s]\s*(-?\d{1,3}(?:\.\d+)?)$/);
+      const loc = m ? { lat: Number(m[1]), lng: Number(m[2]) } : null;
+      if (!loc || !isLatLng(loc)) {
+        ctx.addIssue({
+          code: "custom",
+          message: "「35.6812, 139.7671」のように、緯度と経度をカンマで区切って入力してください。",
+        });
+        return z.NEVER;
+      }
+      return loc;
+    }),
 });
 
 const on = (v: FormDataEntryValue | null) => v === "on";
@@ -54,6 +72,7 @@ export async function updateVenue(_prev: VenueFormState, formData: FormData) {
     tryoutPeriod: formData.get("tryoutPeriod") ?? "",
     hasRanking: on(formData.get("hasRanking")),
     rankingPeriod: formData.get("rankingPeriod") ?? "",
+    location: formData.get("location") ?? "",
   });
   if (!parsed.success) {
     return {
@@ -82,6 +101,7 @@ export async function updateVenue(_prev: VenueFormState, formData: FormData) {
       地域: v.region,
       visible: v.visible,
       programs,
+      location: v.location,
       updatedAt: now,
       updatedBy: admin.email,
     });
@@ -95,8 +115,9 @@ export async function updateVenue(_prev: VenueFormState, formData: FormData) {
         region: before.region ?? "",
         visible: before.visible !== false,
         programs: before.programs ?? null,
+        location: before.location ?? null,
       },
-      after: { name: v.name, region: v.region, visible: v.visible, programs },
+      after: { name: v.name, region: v.region, visible: v.visible, programs, location: v.location },
     });
     updateTag("venues");
     // The ranking groups gyms by name and region.
@@ -212,4 +233,42 @@ export async function setGymPassword(_prev: PasswordState, formData: FormData) {
     .collection("admin_logs")
     .add({ action: "gym_password", venueId: id, by: admin.email, at: now });
   return { password };
+}
+
+export type QrKeyState = { ok?: boolean; message?: string };
+
+/**
+ * Issues (or replaces) the secret part of the gym's own QR code. Replacing it makes every
+ * printed copy of the old QR stop checking players in, e.g. after a photo of it was shared.
+ */
+export async function issueQrKey(_prev: QrKeyState, formData: FormData): Promise<QrKeyState> {
+  const admin = await getAdmin();
+  if (!admin) return { message: EXPIRED };
+  const id = String(formData.get("id") ?? "");
+  if (!/^[A-Za-z0-9_-]{1,64}$/.test(id)) return { message: "会場が見つかりません。" };
+  const db = adminDb();
+  const ref = db.collection("venues").doc(id);
+  const snap = await ref.get();
+  if (!snap.exists) return { message: "会場が見つかりません。" };
+  const replaced = Boolean(snap.data()?.qrKey);
+  const now = new Date().toISOString();
+  await ref.update({
+    qrKey: randomBytes(12).toString("base64url"),
+    qrKeyUpdatedAt: now,
+    updatedAt: now,
+    updatedBy: admin.email,
+  });
+  await db.collection("admin_logs").add({
+    action: replaced ? "venue_qr_reissue" : "venue_qr_issue",
+    venueId: id,
+    by: admin.email,
+    at: now,
+  });
+  revalidatePath(`/admin/venues/${id}`);
+  return {
+    ok: true,
+    message: replaced
+      ? "QR コードを作り直しました。新しい QR を印刷して、古い QR と貼り替えてください。"
+      : "QR コードを発行しました。印刷してジムに貼ってください。",
+  };
 }

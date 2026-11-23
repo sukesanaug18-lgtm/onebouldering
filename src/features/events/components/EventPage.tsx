@@ -1,4 +1,6 @@
+import Image from "next/image";
 import { ChevronDown } from "lucide-react";
+import type { Poster } from "@/features/posters/config";
 import { FadeIn } from "@/components/motion/FadeIn";
 import { Section } from "@/components/layout/Section";
 import { Badge } from "@/components/ui/Badge";
@@ -25,45 +27,84 @@ const IN_PAGE = [
   { id: "faq", label: "よくある質問" },
 ];
 
-/** Shared layout for the three event pages (CLAUDE.md 5). */
-export function EventPage({ content: c }: { content: EventPageContent }) {
+function PosterImage({ poster, name }: { poster: Poster; name: string }) {
+  return (
+    <Image
+      src={poster.src}
+      alt={`${name} のポスター`}
+      width={poster.width}
+      height={poster.height}
+      priority
+      // Uploaded posters are already resized to WebP on the server.
+      unoptimized={poster.custom}
+      sizes="(min-width: 1024px) 360px, 320px"
+      className="h-auto w-full rounded-2xl border border-line"
+    />
+  );
+}
+
+/** Shared layout for the three event pages (CLAUDE.md 5). The poster is set in the office. */
+export function EventPage({
+  content: c,
+  poster = null,
+}: {
+  content: EventPageContent;
+  poster?: Poster | null;
+}) {
   return (
     <main>
       {/* Header */}
       <section className="border-b border-line">
-        <div className="mx-auto max-w-[1200px] px-5 pt-16 pb-12 md:pt-24 md:pb-16">
-          {c.key === "ranking" && <RankingLogo decorative className="mb-6 h-20 md:h-24" />}
-          <Badge event={c.key}>{c.kind}</Badge>
-          <h1 className="mt-5 font-display text-[clamp(2.25rem,1.5rem+3vw,4rem)] leading-[1.1] font-bold tracking-tight">
-            {c.name}
-          </h1>
-          <p className="mt-5 max-w-[36em] text-text-2 md:text-lg">
-            <Phrase>{c.lead}</Phrase>
-          </p>
-          <div className="mt-8 hidden flex-wrap gap-3 lg:flex">
-            <Button href={c.primary.href} size="lg">
-              {c.primary.label}
-            </Button>
-            {c.secondary && (
-              <Button href={c.secondary.href} variant="secondary" size="lg">
-                {c.secondary.label}
-              </Button>
+        <div
+          className={cn(
+            "mx-auto max-w-[1200px] px-5 pt-16 pb-12 md:pt-24 md:pb-16",
+            poster && "lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start lg:gap-16",
+          )}
+        >
+          {poster && (
+            <div className="hidden lg:col-start-2 lg:row-start-1 lg:block">
+              <PosterImage poster={poster} name={c.name} />
+            </div>
+          )}
+          <div className="min-w-0 lg:col-start-1 lg:row-start-1">
+            {c.key === "ranking" && <RankingLogo decorative className="mb-6 h-20 md:h-24" />}
+            <Badge event={c.key}>{c.kind}</Badge>
+            <h1 className="mt-5 font-display text-[clamp(2.25rem,1.5rem+3vw,4rem)] leading-[1.1] font-bold tracking-tight">
+              {c.name}
+            </h1>
+            <p className="mt-5 max-w-[36em] text-text-2 md:text-lg">
+              <Phrase>{c.lead}</Phrase>
+            </p>
+            {poster && (
+              <div className="mt-8 max-w-[320px] lg:hidden">
+                <PosterImage poster={poster} name={c.name} />
+              </div>
             )}
+            <div className="mt-8 hidden flex-wrap gap-3 lg:flex">
+              <Button href={c.primary.href} size="lg">
+                {c.primary.label}
+              </Button>
+              {c.secondary && (
+                <Button href={c.secondary.href} variant="secondary" size="lg">
+                  {c.secondary.label}
+                </Button>
+              )}
+            </div>
+            <nav aria-label="このページの目次" className="-mx-5 mt-10 overflow-x-auto px-5">
+              <ul className="flex gap-2">
+                {IN_PAGE.map((l) => (
+                  <li key={l.id}>
+                    <a
+                      href={`#${l.id}`}
+                      className="inline-flex min-h-10 items-center rounded-full border border-line px-4 text-sm font-bold whitespace-nowrap text-text-2 transition-colors duration-200 hover:border-gray-300 hover:text-text"
+                    >
+                      {l.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
           </div>
-          <nav aria-label="このページの目次" className="-mx-5 mt-10 overflow-x-auto px-5">
-            <ul className="flex gap-2">
-              {IN_PAGE.map((l) => (
-                <li key={l.id}>
-                  <a
-                    href={`#${l.id}`}
-                    className="inline-flex min-h-10 items-center rounded-full border border-line px-4 text-sm font-bold whitespace-nowrap text-text-2 transition-colors duration-200 hover:border-gray-300 hover:text-text"
-                  >
-                    {l.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </nav>
         </div>
       </section>
 

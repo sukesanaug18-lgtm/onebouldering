@@ -1,0 +1,10 @@
+rules_version = '2';
+// The browser never reads or writes Storage directly: the server uses the Admin SDK.
+// Posters are served through /api/posters/[event].
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

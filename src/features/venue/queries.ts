@@ -1,5 +1,7 @@
 import "server-only";
 import { resolveVenuePrograms, type VenuePrograms } from "@/domain/entry";
+import type { LatLng } from "@/domain/venue-pass";
+import { venueLocation } from "@/features/entry/queries";
 import { adminDb } from "@/server/firebase-admin";
 import { SITE_URL } from "@/lib/site";
 
@@ -22,6 +24,10 @@ export type AdminVenue = {
   visible: boolean;
   programs: VenuePrograms;
   hasPassword: boolean;
+  /** Secret part of the gym's own QR code (office only); null until the office issues one. */
+  qrKey: string | null;
+  /** Gym position for the location check-in. */
+  location: LatLng | null;
   updatedAt: string;
   updatedBy: string;
 };
@@ -34,6 +40,8 @@ function toVenue(id: string, v: FirebaseFirestore.DocumentData): AdminVenue {
     visible: v.visible !== false,
     programs: resolveVenuePrograms(v),
     hasPassword: Boolean(v.gymPasswordHash || v.adminPasswordHash || v.password || v["パスワード"]),
+    qrKey: typeof v.qrKey === "string" && v.qrKey ? v.qrKey : null,
+    location: venueLocation(v),
     updatedAt: String(v.updatedAt ?? ""),
     updatedBy: String(v.updatedBy ?? ""),
   };
@@ -54,7 +62,11 @@ export async function getAdminVenue(id: string): Promise<AdminVenue | null> {
   return snap.exists ? toVenue(snap.id, snap.data()!) : null;
 }
 
-/** The unified QR target for a venue (workflow diagram B-2). */
-export function entryUrl(venueId: string): string {
-  return `${SITE_URL.replace(/\/$/, "")}/entry?venue=${encodeURIComponent(venueId)}`;
+/**
+ * The gym's own QR target (workflow diagram B-2). Reading it checks the player in at the gym
+ * for the day, then opens the unified entry. The key makes a QR that only exists at the gym.
+ */
+export function entryUrl(venueId: string, qrKey: string): string {
+  const base = SITE_URL.replace(/\/$/, "");
+  return `${base}/checkin?venue=${encodeURIComponent(venueId)}&k=${encodeURIComponent(qrKey)}`;
 }
