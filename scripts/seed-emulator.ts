@@ -359,6 +359,59 @@ for (const [i, u] of [...users.slice(0, 35), users.find((x) => x.id === "19999")
   ]);
 }
 
+// A qualifier already held, waiting for its results (diagram B-5): 34 numbered entries.
+const ROUND1 = `tnfc${SEASON}_round1_${g2.id}`;
+const round1Name = `THE NORTH FACE CUP ${SEASON} ROUND1`;
+const round1Players = users.slice(40, 74);
+demoExtras.push([
+  "tnfc_rounds",
+  ROUND1,
+  {
+    seasonId: SEASON,
+    roundNumber: 1,
+    roundName: round1Name,
+    venueId: g2.id,
+    venueName: g2.name,
+    eventDate: "2026-11-21",
+    entryDeadline: "2026-11-07",
+    areaCount: 4,
+    capacity: 60,
+    previousFinalBibNo: 0,
+    lastBibNo: round1Players.length,
+    numberedAt: now,
+    judgePassword: "0000",
+    status: "entry_closed",
+    categoryQuotas: {},
+    createdAt: now,
+    updatedAt: now,
+  },
+]);
+for (const [i, u] of round1Players.entries()) {
+  demoExtras.push([
+    "tnfc_entries",
+    `${ROUND1}_${u.id}`,
+    {
+      seasonId: SEASON,
+      roundId: ROUND1,
+      roundName: round1Name,
+      venueId: g2.id,
+      venueName: g2.name,
+      userId: u.id,
+      registeredName: u.name,
+      currentUserName: u.name,
+      furigana: `さんぷる ${String(i).padStart(2, "0")}`,
+      division: String(u.division),
+      email: `player${u.id}@example.test`,
+      zeusOrderNo: `ZE-${2000 + i}`,
+      status: "confirmed",
+      bibNo: i + 1,
+      sessionGroup: i < 17 ? "Group A" : "Group B",
+      source: "csv",
+      createdAt: now,
+    },
+  ]);
+}
+
 const ranking = aggregateRankingData({
   users,
   participantData,

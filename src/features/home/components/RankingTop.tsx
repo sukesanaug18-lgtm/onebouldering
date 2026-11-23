@@ -33,7 +33,9 @@ export function RankingTop({ groups }: { groups: { label: string; rows: RankingR
                     <span
                       className={cn(
                         "flex size-9 shrink-0 items-center justify-center rounded-full font-display text-base font-extrabold tabular-nums",
-                        row.rank === 1 ? "bg-event-ranking text-text" : "border border-line text-text-2",
+                        row.rank === 1
+                          ? "bg-event-ranking text-text"
+                          : "border border-line text-text-2",
                       )}
                     >
                       <span className="sr-only">第</span>

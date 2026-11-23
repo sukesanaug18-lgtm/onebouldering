@@ -9,9 +9,10 @@ const tabs = (base: string) => [
   { href: `${base}/entries`, label: "エントリー" },
   { href: `${base}/checks`, label: "締切前チェック" },
   { href: `${base}/bibs`, label: "ゼッケン・CSV" },
+  { href: `${base}/results`, label: "リザルト（予選後）" },
 ];
 
-/** The four steps of diagram B-4 for one round. */
+/** The steps of diagrams B-4 (before) and B-5 (after the qualifier) for one round. */
 export function RoundTabs({ base }: { base: string }) {
   return <RoundTabLinks base={base} path={usePathname()} />;
 }

@@ -1,12 +1,14 @@
 import "server-only";
 import { canonicalDivision, UNDECIDED_DIVISION } from "@/domain/division";
 import {
+  categoryRank,
   isActiveEntry,
   VENUE_CHECKLIST,
   type TnfcEntry,
   type TnfcMember,
   type VenueChecklistKey,
 } from "@/domain/tnfc";
+import { DEFAULT_FINALS_CUTOFF, type ScoredResult, type SyncMember } from "@/domain/tnfc-results";
 import { adminDb } from "@/server/firebase-admin";
 import { ROUND_STATUS, type RoundStatus } from "./status";
 
@@ -41,6 +43,12 @@ export type AdminRound = {
   status: RoundStatus;
   checklist: Record<VenueChecklistKey, string>;
   numberedAt: string;
+  /** Finals line (top N of each category) and per-category overrides, set on result import. */
+  finalsCutoff: number;
+  finalsCutoffByCategory: Record<string, number>;
+  resultsImportedAt: string;
+  resultCount: number;
+  finalistCount: number;
   updatedAt: string;
   updatedBy: string;
 };
@@ -69,6 +77,16 @@ function toRound(id: string, d: FirebaseFirestore.DocumentData): AdminRound {
       string
     >,
     numberedAt: text(d.numberedAt),
+    finalsCutoff: d.finalsCutoff == null ? DEFAULT_FINALS_CUTOFF : int(d.finalsCutoff),
+    finalsCutoffByCategory: Object.fromEntries(
+      Object.entries((d.finalsCutoffByCategory ?? {}) as Record<string, unknown>).map(([k, v]) => [
+        k,
+        int(v),
+      ]),
+    ),
+    resultsImportedAt: text(d.resultsImportedAt),
+    resultCount: int(d.resultCount),
+    finalistCount: int(d.finalistCount),
     updatedAt: text(d.updatedAt),
     updatedBy: text(d.updatedBy),
   };
@@ -168,4 +186,51 @@ export async function nextRoundDefaults(seasonId: string) {
     roundNumber: Math.max(0, ...rounds.map((r) => r.roundNumber)) + 1,
     previousFinalBibNo: Math.max(0, ...rounds.map((r) => r.lastBibNo ?? 0)),
   };
+}
+
+export type RoundResult = ScoredResult & { declined: boolean };
+
+/** Saved results of a round (diagram B-5), in category and place order. */
+export async function getRoundResults(roundId: string): Promise<RoundResult[]> {
+  const snap = await adminDb().collection("tnfc_results").where("roundId", "==", roundId).get();
+  return snap.docs
+    .map((s) => {
+      const d = s.data();
+      return {
+        userId: text(d.userId),
+        name: text(d.userName),
+        division: canonicalDivision(text(d.division) || UNDECIDED_DIVISION),
+        rank: int(d.rank),
+        score: text(d.scoreSummary),
+        categoryCount: int(d.categoryParticipants),
+        qualified: Boolean(d.qualifiedForFinals),
+        points: int(d.rankingPointsAwarded),
+        declined: d.status === "cancelled_finals",
+      };
+    })
+    .sort(
+      (a, b) =>
+        categoryRank(a.division) - categoryRank(b.division) ||
+        a.division.localeCompare(b.division) ||
+        a.rank - b.rank,
+    );
+}
+
+/** Every member, for the 会員 sheet of the finals list (1.2.1). Office only. */
+export async function getSyncMembers(): Promise<SyncMember[]> {
+  const snap = await adminDb().collection("users").get();
+  return snap.docs
+    .map((s) => {
+      const u = s.data();
+      return {
+        id: s.id,
+        name: text(u.name ?? u["名前"]),
+        furigana: text(u.furigana ?? u.kana ?? u["フリガナ"]),
+        gender: text(u.gender ?? u["性別"]),
+        division: canonicalDivision(text(u.division ?? u["Division"]) || UNDECIDED_DIVISION),
+        birthDate: text(u.birthDate ?? u["生年月日"]),
+        email: text(u.email ?? u["メールアドレス"]),
+      };
+    })
+    .sort((a, b) => a.id.localeCompare(b.id, "ja", { numeric: true }));
 }

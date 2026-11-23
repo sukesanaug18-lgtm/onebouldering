@@ -39,8 +39,8 @@ async function TryoutList() {
                 </span>
               </p>
               <p className="text-sm text-text-2">
-                <span className="tabular-nums">{shortDateTime(t.at)}</span> ・ {divisionLabel(t.challenged)} に挑戦
-                ・ {t.completedCount}/6 完登
+                <span className="tabular-nums">{shortDateTime(t.at)}</span> ・{" "}
+                {divisionLabel(t.challenged)} に挑戦 ・ {t.completedCount}/6 完登
               </p>
             </div>
             <p className="font-bold whitespace-nowrap">

@@ -8,10 +8,7 @@ export async function Notifications({ userId }: { userId: string }) {
   const list = await getMyNotifications(userId);
   if (list.length === 0) return null;
   return (
-    <section
-      aria-label="お知らせ"
-      className="rounded-2xl border border-line bg-bg-subtle p-5"
-    >
+    <section aria-label="お知らせ" className="rounded-2xl border border-line bg-bg-subtle p-5">
       <div className="flex items-center justify-between gap-4">
         <p className="flex items-center gap-2 font-bold">
           <Bell className="size-4" aria-hidden />
