@@ -52,6 +52,10 @@ const venues = GYMS.map((g, i) => {
   };
 });
 
+// Gym staff login for local testing only (Emulator): every venue uses the password in README.
+const GYM_PASSWORD_HASH = await hashPin("gym-demo-2027");
+for (const v of venues) Object.assign(v, { gymPasswordHash: GYM_PASSWORD_HASH });
+
 const DIVISIONS = [
   ["Men‘s Division 1", 1500],
   ["Men‘s Division 2", 1300],
@@ -67,6 +71,11 @@ const DIVISIONS = [
 ] as const;
 
 const users: Record<string, unknown>[] = [];
+const sheet = (nos: number[]) =>
+  Object.fromEntries(
+    Array.from({ length: 40 }, (_, i) => [String(i + 1), nos.includes(i + 1) ? "Y" : "N"]),
+  );
+const approvedMap = (nos: number[]) => Object.fromEntries(nos.map((n) => [String(n), true]));
 const participantData: Record<string, unknown>[] = [];
 const competitionResults: Record<string, unknown>[] = [];
 const COMP_POINTS = [10000, 8000, 6000, 5000, 5000, 3000, 3000, 1000];
@@ -84,12 +93,28 @@ for (let i = 0; i < 160; i++) {
         : rand() < 0.6
           ? pick(venues.filter((x) => x.region === home.region))
           : pick(venues);
+    // Stronger Divisions send harder problems: P(sent No.n) falls around 40 × skill.
+    const skill = (base / 1500) * (0.55 + rand() * 0.45);
+    const nos = Array.from({ length: 40 }, (_, k) => k + 1).filter(
+      (n) => rand() < 1 / (1 + Math.exp((n - 40 * skill) / 3)),
+    );
+    const status = rand() < 0.9 ? "Approved" : "Pending";
     participantData.push({
       seasonId: SEASON,
       userId: id,
       venueId: venue.id,
-      totalPoints: Math.round((base * (0.4 + rand() * 0.6)) / 10) * 10,
-      status: rand() < 0.9 ? "Approved" : "Pending",
+      problems: sheet(nos),
+      ...(status === "Approved" ? { approvedProblems: approvedMap(nos) } : {}),
+      totalPoints: nos.reduce((sum, n) => sum + n, 0),
+      status,
+      submittedAt: new Date(
+        Date.UTC(
+          2026,
+          5 + Math.floor(rand() * 5),
+          1 + Math.floor(rand() * 28),
+          1 + Math.floor(rand() * 12),
+        ),
+      ).toISOString(),
     });
   }
   if (rand() < 0.25) {
@@ -119,10 +144,6 @@ users.push({
 const DEMO = "10000";
 const [g1, g2, g3] = [venues[0], venues[1], venues[2]];
 const now = new Date().toISOString();
-const sheet = (nos: number[]) =>
-  Object.fromEntries(
-    Array.from({ length: 40 }, (_, i) => [String(i + 1), nos.includes(i + 1) ? "Y" : "N"]),
-  );
 const demoScores: [typeof g1, string, number[], string][] = [
   [g1, "Approved", [1, 2, 3, 5, 8, 10, 12, 15, 18, 20, 22], ""],
   [g2, "Pending", [1, 2, 4, 6, 9, 11, 14], ""],
@@ -136,15 +157,62 @@ for (const [v, status, nos, rejectReason] of demoScores) {
     One_Bouldering_ID: DEMO,
     venueId: v.id,
     problems: sheet(nos),
-    ...(status === "Approved"
-      ? { approvedProblems: Object.fromEntries(nos.map((n) => [String(n), true])) }
-      : {}),
+    ...(status === "Approved" ? { approvedProblems: approvedMap(nos) } : {}),
     totalPoints: total,
     status,
     rejectReason,
     submittedAt: now,
   });
 }
+// Gym staff samples at the first gym: three Pending scores (one adds to an approved sheet)
+// and a few Tryouts, so every /gym-admin tab has something to show.
+const gymPending: [string, number[], number[]][] = [
+  ["10001", [1, 2, 3, 4, 6, 7, 9, 12], []],
+  ["10002", [2, 5, 8, 11, 13, 16, 19, 24, 27], []],
+  ["10003", [1, 2, 3, 5, 7, 10, 21, 25], [1, 2, 3, 5, 7, 10]],
+];
+for (const [uid, nos, approved] of gymPending) {
+  const at = participantData.findIndex((d) => d.userId === uid && d.venueId === g1.id);
+  if (at >= 0) participantData.splice(at, 1);
+  participantData.push({
+    seasonId: SEASON,
+    userId: uid,
+    One_Bouldering_ID: uid,
+    venueId: g1.id,
+    problems: sheet(nos),
+    approvedProblems: approvedMap(approved),
+    approvedTotalPoints: approved.reduce((sum, n) => sum + n, 0),
+    totalPoints: nos.reduce((sum, n) => sum + n, 0),
+    status: "Pending",
+    submittedAt: new Date(Date.UTC(2026, 10, 20 + gymPending.length, 2, 0)).toISOString(),
+  });
+}
+const gymTryouts: [string, string, string, number, string, string, string][] = [
+  ["10004", "MD4", "男性", 6, "PROMOTION", "Men‘s Division 4", "Men‘s Division 3"],
+  ["10005", "WD3", "女性", 4, "KEEP", "Women‘s Division 3", "Women‘s Division 3"],
+  ["19999", "MD5", "男性", 2, "INITIAL", "UNDECIDED", "Men‘s Division 5"],
+];
+const tryoutExtras = gymTryouts.map(([uid, ch, gender, done, judgment, from, to], i) => [
+  "tryout_logs",
+  `seed_try_${uid}`,
+  {
+    seasonId: SEASON,
+    userId: uid,
+    userName: String(users.find((u) => u.id === uid)?.name ?? ""),
+    venueId: g1.id,
+    venueName: g1.name,
+    category: gender === "女性" ? "WD" : "MD",
+    preCheckResult: "Skip",
+    challengedShortDivision: ch,
+    completedProblemNos: Array.from({ length: done }, (_, k) => k + 1),
+    completedCount: done,
+    judgment,
+    oldDivision: from,
+    newDivision: to,
+    createdAt: new Date(Date.UTC(2026, 10, 10 + i, 5, 0)).toISOString(),
+  },
+]) as [string, string, Record<string, unknown>][];
+
 competitionResults.push({
   seasonId: SEASON,
   userId: DEMO,
@@ -160,6 +228,7 @@ const demoExtras: [string, string, Record<string, unknown>][] = [
     {
       seasonId: SEASON,
       userId: DEMO,
+      userName: "デモ選手",
       venueId: g1.id,
       venueName: g1.name,
       challengedShortDivision: "MD3",
@@ -248,9 +317,9 @@ await fetch(`http://${host}/emulator/v1/projects/${PROJECT_ID}/databases/(defaul
 
 await writeAll("venues", venues, (d) => String(d.id));
 await writeAll("users", users, (d) => String(d.id));
-await writeAll("participant_data", participantData);
+await writeAll("participant_data", participantData, (d) => `${SEASON}_${d.userId}_${d.venueId}`);
 await writeAll("competition_results", competitionResults);
-for (const [collection, id, data] of demoExtras) {
+for (const [collection, id, data] of [...demoExtras, ...tryoutExtras]) {
   await db.collection(collection).doc(id).set(data);
 }
 const cacheDoc = {
