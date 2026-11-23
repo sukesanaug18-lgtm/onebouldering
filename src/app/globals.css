@@ -98,3 +98,22 @@ h3 {
     padding-bottom: calc(10.5rem + env(safe-area-inset-bottom));
   }
 }
+
+/* A4 POP (/admin/tools/pop-a4): one sheet per printed page. */
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+  body {
+    background: #fff;
+  }
+  .pop-page {
+    break-after: page;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  .pop-page:last-child {
+    break-after: auto;
+  }
+}

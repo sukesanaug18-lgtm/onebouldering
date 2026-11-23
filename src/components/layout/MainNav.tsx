@@ -7,7 +7,11 @@ import { cn } from "@/lib/cn";
 
 /** Desktop header links with the current page marked. */
 export function MainNav() {
-  const pathname = usePathname();
+  return <MainNavLinks pathname={usePathname()} />;
+}
+
+/** The links for a given path. With "" (Suspense fallback) nothing is marked. */
+export function MainNavLinks({ pathname }: { pathname: string }) {
   return (
     <nav aria-label="メインメニュー" className="hidden lg:block">
       <ul className="flex items-center gap-1">

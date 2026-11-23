@@ -1,6 +1,7 @@
+import { Suspense } from "react";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
-import { MobileTabBar } from "@/components/layout/MobileTabBar";
+import { MobileTabBar, MobileTabBarLinks } from "@/components/layout/MobileTabBar";
 
 /** Public pages: header, footer and the phone bottom tabs (CLAUDE.md 4). */
 export default function PublicLayout({ children }: LayoutProps<"/">) {
@@ -9,7 +10,9 @@ export default function PublicLayout({ children }: LayoutProps<"/">) {
       <Header />
       <div className="flex flex-1 flex-col">{children}</div>
       <Footer />
-      <MobileTabBar />
+      <Suspense fallback={<MobileTabBarLinks pathname="" />}>
+        <MobileTabBar />
+      </Suspense>
     </>
   );
 }

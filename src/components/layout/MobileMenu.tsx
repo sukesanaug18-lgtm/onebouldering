@@ -18,10 +18,17 @@ import { Button } from "@/components/ui/Button";
 import { GYM_NAV, MENU_GROUPS, isActivePath } from "@/content/navigation";
 import { cn } from "@/lib/cn";
 
-/** Menu button + full-width panel for phones and tablets (< lg). */
-export function MobileMenu({ account }: { account: ReactNode }) {
+/** The menu with the current page marked. */
+export function MobileMenuCurrent({ account }: { account: ReactNode }) {
+  return <MobileMenu account={account} pathname={usePathname()} />;
+}
+
+/**
+ * Menu button + full-width panel for phones and tablets (< lg). With pathname "" (Suspense
+ * fallback) nothing is marked.
+ */
+export function MobileMenu({ account, pathname = "" }: { account: ReactNode; pathname?: string }) {
   const [open, setOpen] = useState(false);
-  const pathname = usePathname();
   const reduce = useReducedMotion();
   const mounted = useSyncExternalStore(
     noopSubscribe,

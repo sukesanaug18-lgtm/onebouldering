@@ -62,27 +62,6 @@ export const SAMPLE_RANKING: { label: string; rows: RankingRow[] }[] = [
 
 export type NewsItem = { date: string; category: string; title: string; href: string };
 
-export const SAMPLE_NEWS: NewsItem[] = [
-  {
-    date: "2026-11-20",
-    category: "TNFC",
-    title: "（サンプル）THE NORTH FACE CUP 2027 予選の日程を公開しました",
-    href: "/news",
-  },
-  {
-    date: "2026-11-12",
-    category: "Ranking",
-    title: "（サンプル）11月のランキングを更新しました",
-    href: "/news",
-  },
-  {
-    date: "2026-11-01",
-    category: "お知らせ",
-    title: "（サンプル）参加ジムが増えました",
-    href: "/news",
-  },
-];
-
 export const SAMPLE_SPONSORS = [
   { name: "NEWHALE", logo: "/images/logos/newhale.png" },
   { name: "REWHITE", logo: "/images/logos/rewhite.png" },

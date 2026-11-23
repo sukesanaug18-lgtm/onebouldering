@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import type { NewsItem } from "@/content/home-sample";
-import { SampleNote } from "./SampleNote";
 
 /** Latest 3 news (CLAUDE.md 5-6). */
 export function NewsList({ items }: { items: NewsItem[] }) {
@@ -21,9 +20,9 @@ export function NewsList({ items }: { items: NewsItem[] }) {
           </Button>
         }
       />
-      <SampleNote />
       <FadeIn className="mt-8">
-        <ul className="divide-y divide-line border-y border-line">
+        {items.length === 0 && <p className="text-text-2">まだお知らせはありません。</p>}
+        <ul className="divide-y divide-line border-y border-line empty:hidden">
           {items.map((item) => (
             <li key={item.title}>
               <Link

@@ -49,7 +49,7 @@ const venues = GYMS.map((g, i) => {
       hasTryout: i % 7 !== 6,
       tryoutPeriod: "2026/4/1〜2027/3/31",
       hasRanking: i % 11 !== 10,
-      rankingPeriod: "2026/6/1〜2026/12/31",
+      rankingPeriod: `2026/${6 + (i % 6)}/1〜2026/${7 + (i % 6)}/15`,
     },
   };
 });
@@ -114,6 +114,8 @@ for (let i = 0; i < 160; i++) {
     id,
     name: `サンプル選手${String(i + 1).padStart(3, "0")}`,
     division,
+    // Registered April–November 2026 (spread by index, so the random data stays the same).
+    createdAt: new Date(Date.UTC(2026, 3 + (i % 8), 1 + (i % 27), 3)).toISOString(),
     ...(isU ? { gender: division === "U-12W" ? "女性" : "男性" } : {}),
     ...(isU && i % 7 !== 0
       ? { birthDate: `${uYear}-${String(1 + (i % 12)).padStart(2, "0")}-15` }
@@ -474,6 +476,69 @@ await writeAll("participant_data", participantData, (d) => `${SEASON}_${d.userId
 await writeAll("competition_results", competitionResults);
 for (const [collection, id, data] of [...demoExtras, ...tryoutExtras]) {
   await db.collection(collection).doc(id).set(data);
+}
+// NEWS samples: two published (one pinned), one scheduled a week ahead, one draft.
+const day = (offset: number) =>
+  new Date(Date.now() + 9 * 3600_000 + offset * 86_400_000).toISOString().slice(0, 10);
+const newsDocs: [string, Record<string, unknown>][] = [
+  [
+    "sample-welcome",
+    {
+      title: "（サンプル）新しい ONE Bouldering サイトを公開しました",
+      category: "お知らせ",
+      status: "published",
+      publishedAt: day(-10),
+      isPinned: true,
+      body: [
+        "## 3つのイベントがひとつに",
+        "THE NORTH FACE CUP、Division Tryout、ONE bouldering Ranking の情報を、このサイトにまとめました。",
+        "",
+        "- エントリーやスコア提出は[マイページ](/mypage)から",
+        "- 日程は各イベントのページで確認できます",
+        "",
+        "詳しくは https://www.onebouldering.jp/ をご覧ください。",
+      ].join("\n"),
+    },
+  ],
+  [
+    "sample-tnfc",
+    {
+      title: "（サンプル）THE NORTH FACE CUP 2027 予選の日程を公開しました",
+      category: "大会情報",
+      status: "published",
+      publishedAt: day(-3),
+      isPinned: false,
+      body: "全国の予選ラウンドの日程を公開しました。**エントリーは各予選の1か月前から**受け付けます。\n\n[TNFC のページへ](/tnfc)",
+    },
+  ],
+  [
+    "sample-scheduled",
+    {
+      title: "（サンプル）年末年始の営業について",
+      category: "お知らせ",
+      status: "published",
+      publishedAt: day(7),
+      isPinned: false,
+      body: "予約公開のサンプルです。公開日になるまで公開ページには出ません。",
+    },
+  ],
+  [
+    "sample-draft",
+    {
+      title: "（サンプル）下書きの記事",
+      category: "ルール更新",
+      status: "draft",
+      publishedAt: day(0),
+      isPinned: false,
+      body: "下書きのサンプルです。",
+    },
+  ],
+];
+for (const [id, d] of newsDocs) {
+  await db
+    .collection("news_articles")
+    .doc(id)
+    .set({ ...d, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
 }
 const cacheDoc = {
   seasonId: SEASON,

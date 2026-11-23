@@ -10,7 +10,11 @@ const ICONS = { home: House, events: Flag, schedule: CalendarDays, user: UserRou
 
 /** Bottom tabs on phones and tablets (CLAUDE.md 6-8). Hidden from lg up. */
 export function MobileTabBar() {
-  const pathname = usePathname();
+  return <MobileTabBarLinks pathname={usePathname()} />;
+}
+
+/** The tabs for a given path. With "" (Suspense fallback) nothing is marked. */
+export function MobileTabBarLinks({ pathname }: { pathname: string }) {
   return (
     <nav
       aria-label="タブメニュー"

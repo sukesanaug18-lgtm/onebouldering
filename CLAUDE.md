@@ -212,6 +212,12 @@ onebouldering/
 
 **TNFC キャンセル・会場変更（図B-8 1.6.1〜1.6.2、図B-5 1.2.3）**：大会の「キャンセル・会場変更」タブで選手を選び、①キャンセル（区分＝コンビニ返金／キャンセル料あり／返金なし、金額、受付手段、メモ）→ エントリーを cancelled にし `tnfc_cancellations` に記録、②会場変更 → `${移動先roundId}_${userId}` に移してゼッケン・グループを外す（定員超過・要再採番・旧サイト3か所の修正を案内）。どちらも受付手段で送る返信文を出す。台帳は `/admin/tnfc/cancellations`（CSV あり）。
 
+**NEWS**：`news_articles`（id は `YYYYMMDD-xxxxxx`）。事務局 `/admin/news` で作成・編集・削除（下書き／公開、公開日が未来なら予約公開、先頭固定、画像1枚＝サーバーで WebP 化して Storage `news/{id}.webp`、`/api/news-images/{id}?v=` で配信）。本文は HTML ではなく簡単な記号（`## 見出し`・`- 箇条書き`・`**太字**`・`[文字](URL)`・URL自動リンク）で書き、`src/domain/news.ts` が解析して React 要素で表示する（DB の HTML をページに入れない。リンクは https/http とサイト内パスのみ）。公開側 `/news`（カテゴリー絞り込み）・`/news/[slug]`・トップの最新3件。公開一覧は1時間キャッシュ＋保存時 updateTag("news")。旧サイトの HTML 記事はデータ移行時に変換する。
+
+**分析**：`/admin/analytics`。今季の会員・Ranking 参加者・提出数・1人あたりジム数・Tryout 受験、月別の提出数と新規会員、課題ごとの完登率、提出の時間帯（日本時間）、会場別・Division 別（CSV あり `/api/admin/analytics?type=venues|divisions|problems`）。計算は `src/domain/analytics.ts`。閲覧数などのアクセス解析は GA4 の管理画面で見る（旧サイトのように GA4 の秘密鍵を Firestore に保存しない）。
+
+**A4 POP**：`/admin/tools/pop-a4`。会場の Ranking 開催期間から地域別の開催スケジュール（A4 縦1枚＝1地域、ロゴ・期間・参加のポイント・公式サイトの QR）を作り、ブラウザで印刷／PDF 保存。ジム数に応じて行の大きさを変え、1地域およそ12ジムまで1枚に収まる。文言は `src/content/pop.ts`。ロゴは今は `src/content/gyms.ts` を名前で照合（データ移行でロゴを Storage に移したら会場データから読む）。
+
 **年度更新（図B-7 1.5.1〜1.5.2）**：`/admin/rollover`。次シーズン（CURRENT_SEASON_ID+1）への切り替えで、Men‘s Division 4・5 と Women‘s Division 3・4 を UNDECIDED（divisionStatus undecided、Tryout を受け直し）、U カテゴリーは次シーズン末の4月1日時点の年齢で決め直し（16歳以上は UNDECIDED）。生年月日がない・おかしい U の人は変更せず「確認が必要」に出す。ロジックは `src/domain/rollover.ts`。プレビュー → 一括実行（users 更新・本人通知・admin_logs・ランキング再構築）。実行記録 `site_settings/rollover_${次シーズン}` があれば2回目は不可（途中で止まった場合だけ続きを実行できる）。本戦の昇格は先に反映する運用。
 
 **TNFC 本戦（図B-6 1.3〜1.4）**：`/admin/tnfc/finals`。予選（roundNumber < 90）の確定リザルトから本戦出場者を集め、同じ予選・カテゴリーの次点を表示。辞退は `cancelled_finals` にして台帳へ記録し、次点を繰り上げると `promotedToFinals` と通知（予選リザルトを取り込み直しても繰り上げは残る）。本戦は1シーズン1つ（id `tnfc${season}_finals`、roundNumber 99）。「本戦エントリーを作る」で出場者のエントリーとゼッケン・グループを作る（出場者でなくなった人はキャンセル）。本戦リザルトは同じリザルト画面で取り込み（通過ラインなし）、本戦ページで上位N位（既定3）の Division を1つ上げる（Division 1 と U はそのまま、通知・今季の TNFC エントリー同期・ランキング再構築）。本戦結果のお知らせ文もコピーできる。

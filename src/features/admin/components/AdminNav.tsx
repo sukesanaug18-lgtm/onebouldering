@@ -10,7 +10,10 @@ const ITEMS = [
   { href: "/admin/members", label: "会員" },
   { href: "/admin/venues", label: "会場" },
   { href: "/admin/tnfc", label: "TNFC" },
+  { href: "/admin/news", label: "NEWS" },
+  { href: "/admin/analytics", label: "分析" },
   { href: "/admin/posters", label: "ポスター" },
+  { href: "/admin/tools/pop-a4", label: "A4 POP" },
   { href: "/admin/rollover", label: "年度更新" },
 ] as const;
 

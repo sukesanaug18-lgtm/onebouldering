@@ -24,7 +24,7 @@ async function StaffBar() {
 export default function AdminConsoleLayout({ children }: LayoutProps<"/admin">) {
   return (
     <>
-      <header className="bg-white px-5 pt-4 lg:pb-4">
+      <header className="bg-white px-5 pt-4 lg:pb-4 print:hidden">
         <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-4">
           <div>
             <p className="font-display text-xs font-bold tracking-[0.2em] text-text-3 uppercase">
@@ -42,8 +42,8 @@ export default function AdminConsoleLayout({ children }: LayoutProps<"/admin">) 
           </Suspense>
         </div>
       </header>
-      <div className="mx-auto flex w-full max-w-[1200px] flex-1 gap-8 px-5 py-8">
-        <aside className="hidden w-48 shrink-0 lg:block">
+      <div className="mx-auto flex w-full max-w-[1200px] flex-1 gap-8 px-5 py-8 print:block print:max-w-none print:p-0">
+        <aside className="hidden w-48 shrink-0 lg:block print:hidden">
           <div className="sticky top-6">
             <Suspense fallback={<AdminNavLinks path="" />}>
               <AdminNav />
