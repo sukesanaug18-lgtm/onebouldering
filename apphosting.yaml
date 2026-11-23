@@ -9,7 +9,7 @@ env:
   # URL shown in the console (https://<backend>--one-bouldering.<region>.hosted.app), then with
   # the production domain once it is decided.
   - variable: NEXT_PUBLIC_SITE_URL
-    value: https://REPLACE-WITH-BACKEND.hosted.app
+    value: https://onebouldering--one-bouldering.us-east4.hosted.app
     availability:
       - BUILD
       - RUNTIME
