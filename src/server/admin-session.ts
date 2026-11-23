@@ -52,6 +52,26 @@ export async function signInWithPassword(email: string, password: string): Promi
   }
 }
 
+/**
+ * Asks Firebase Authentication to email a password set / reset link (Firebase's own email,
+ * in Japanese). Used for new office accounts, which are created without a password.
+ */
+export async function sendPasswordSetupEmail(email: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${authBaseUrl()}/accounts:sendOobCode?key=${apiKey()}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Firebase-Locale": "ja" },
+      body: JSON.stringify({ requestType: "PASSWORD_RESET", email }),
+      cache: "no-store",
+    });
+    if (!res.ok) console.error("[admin] password email failed", res.status, await res.text());
+    return res.ok;
+  } catch (err) {
+    console.error("[admin] password email request failed", err);
+    return false;
+  }
+}
+
 /** Creates the session cookie when the ID token carries the admin claim. */
 export async function createAdminSession(idToken: string): Promise<boolean> {
   const decoded = await adminAuth().verifyIdToken(idToken);

@@ -78,18 +78,13 @@ npx firebase-tools apphosting:secrets:grantaccess session-secret --backend onebo
 
 以後は、`main` に push するたびに自動でサイトが更新されます。
 
-## 6. 事務局のアカウントを作る（あなた → AI）
+## 6. 事務局のアカウント（済み・追加は画面から）
 
-1. Firebase コンソール「Authentication → ユーザー → ユーザーを追加」でメールアドレスとパスワードを登録（あなた）。
-2. そのアカウントに事務局の権限を付けます。Google Cloud にログインしてから実行します（あなた、または AI が案内）。
+最初の事務局アカウント（sukesanaug18@gmail.com）は作成済みです。パスワードはまだありません。
 
-```powershell
-gcloud auth application-default login
-```
-
-```powershell
-$env:FIREBASE_PROJECT_ID = "one-bouldering"; node scripts/grant-admin.ts <事務局のメールアドレス>
-```
+1. `https://onebouldering--one-bouldering.us-east4.hosted.app/admin/login/password` でメールアドレスを入れて「パスワード設定のメールを送る」。
+2. 届いたメールのリンクからパスワードを決めて、`/admin/login` でログイン。
+3. ほかの人を追加するときは、事務局画面の「事務局メンバー」でメールアドレスを入れて追加します。相手にパスワード設定のメールが届きます。外すときも同じ画面から。
 
 ## 7. データを入れる（決めてから）
 

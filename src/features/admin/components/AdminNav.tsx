@@ -15,6 +15,7 @@ const ITEMS = [
   { href: "/admin/posters", label: "ポスター" },
   { href: "/admin/tools/pop-a4", label: "A4 POP" },
   { href: "/admin/rollover", label: "年度更新" },
+  { href: "/admin/staff", label: "事務局メンバー" },
 ] as const;
 
 /** Sideways tabs on phones, a vertical list from lg up. */
