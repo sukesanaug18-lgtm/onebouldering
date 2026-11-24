@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import * as z from "zod";
 import {
@@ -126,6 +126,7 @@ export async function createRound(
     console.error("[tnfc] create round failed", err);
     return { message: FAILED };
   }
+  updateTag("tnfc"); // public schedule
   redirect(`/admin/tnfc/${id}`);
 }
 
@@ -177,6 +178,7 @@ export async function updateRound(
       after,
     });
     revalidatePath(`/admin/tnfc/${v.id}`, "layout");
+    updateTag("tnfc"); // public schedule
     const bibChanged =
       before.lastBibNo != null && Number(before.previousFinalBibNo ?? 0) !== v.previousFinalBibNo;
     return {

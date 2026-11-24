@@ -218,7 +218,7 @@ export function ResultImportForm({
                   <th className="py-2 pr-3 font-bold">氏名</th>
                   <th className="py-2 pr-3 font-bold">ID</th>
                   {!finals && <th className="py-2 pr-3 font-bold">本戦</th>}
-                  <th className="py-2 text-right font-bold">付与pt</th>
+                  {!finals && <th className="py-2 text-right font-bold">付与pt</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
@@ -229,7 +229,9 @@ export function ResultImportForm({
                     <td className="py-2 pr-3">{r.name}</td>
                     <td className="py-2 pr-3 text-text-3 tabular-nums">{r.userId}</td>
                     {!finals && <td className="py-2 pr-3">{r.qualified ? <b>出場</b> : ""}</td>}
-                    <td className="py-2 text-right tabular-nums">{r.points.toLocaleString()}</td>
+                    {!finals && (
+                      <td className="py-2 text-right tabular-nums">{r.points.toLocaleString()}</td>
+                    )}
                   </tr>
                 ))}
               </tbody>
@@ -244,15 +246,21 @@ export function ResultImportForm({
                 const msg = imported
                   ? "この大会のリザルトとポイントを、今回の内容で置き換えます。よろしいですか？"
                   : finals
-                    ? `${scored.length}人のリザルトを確定し、Ranking ポイントを反映します。よろしいですか？`
+                    ? `${scored.length}人の本戦リザルトを確定します（Ranking ポイントには反映しません）。よろしいですか？`
                     : `${scored.length}人のリザルトを確定し、本戦出場者 ${scored.filter((r) => r.qualified).length}人とRanking ポイントを反映します。よろしいですか？`;
                 if (window.confirm(msg)) send("apply");
               }}
             >
-              {pending ? "反映中…" : "リザルト確定 ＋ Ranking ポイント付与"}
+              {pending
+                ? "反映中…"
+                : finals
+                  ? "本戦リザルトを確定"
+                  : "リザルト確定 ＋ Ranking ポイント付与"}
             </Button>
             <p className="text-xs text-text-3">
-              付与ポイント＝順位点（1位10,000〜11位以下1,000）×カテゴリー人数の倍率（26人以上×1.2／11〜25人×1.0／3〜10人×0.8／1〜2人×0.5）。ランキングとマイページにすぐ反映されます。
+              {finals
+                ? "本戦のリザルトは記録だけで、Ranking ポイントには反映しません。"
+                : "付与ポイント＝順位点（1位10,000〜11位以下1,000）×カテゴリー人数の倍率（26人以上×1.2／11〜25人×1.0／3〜10人×0.8／1〜2人×0.5）。ランキングとマイページにすぐ反映されます。"}
             </p>
           </div>
         </div>

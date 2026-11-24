@@ -1,4 +1,4 @@
-// Site navigation (CLAUDE.md 4, 6-8). Routes not built yet will 404 until their step.
+// Site navigation (CLAUDE.md 4, 6-8).
 
 export type NavItem = { href: string; label: string; external?: boolean };
 

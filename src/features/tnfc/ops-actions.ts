@@ -354,6 +354,7 @@ export async function createFinalsRound(
     return { message: FAILED };
   }
   await log("tnfc_finals_create", admin.email, { roundId });
+  updateTag("tnfc"); // public schedule
   redirect("/admin/tnfc/finals");
 }
 

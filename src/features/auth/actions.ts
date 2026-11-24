@@ -129,13 +129,26 @@ export async function register(_prev: FormState, formData: FormData): Promise<Fo
   return { ok: true, licenseNo };
 }
 
+/** A stored birth date ("2010-05-03", "2010/5/3") as YYYY-MM-DD, or "" when unreadable. */
+function sameDate(v: unknown): string {
+  // A Firestore Timestamp (old data): the date in Japan time.
+  if (v && typeof v === "object" && "toDate" in v && typeof v.toDate === "function") {
+    const d = new Date((v.toDate() as Date).getTime() + 9 * 3600_000);
+    return d.toISOString().slice(0, 10);
+  }
+  const m = String(v ?? "")
+    .trim()
+    .match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
+  return m ? `${m[1]}-${m[2].padStart(2, "0")}-${m[3].padStart(2, "0")}` : "";
+}
+
 export async function resetPin(_prev: FormState, formData: FormData): Promise<FormState> {
   const values = fields(formData);
   const parsed = ResetPinSchema.safeParse(values);
   if (!parsed.success) {
     return { errors: z.flattenError(parsed.error).fieldErrors, values: withoutSecrets(values) };
   }
-  const { licenseNo, email, pin } = parsed.data;
+  const { licenseNo, email, birthDate, pin } = parsed.data;
 
   const locked = await lockedMinutes("reset", licenseNo);
   if (locked) return { message: lockedMessage(locked), values: withoutSecrets(values) };
@@ -143,10 +156,19 @@ export async function resetPin(_prev: FormState, formData: FormData): Promise<Fo
   const ref = adminDb().collection("users").doc(licenseNo);
   const snap = await ref.get();
   const saved = String(snap.data()?.email ?? snap.data()?.["メールアドレス"] ?? "");
-  if (!snap.exists || !saved || saved.trim().toLowerCase() !== email.toLowerCase()) {
+  // License numbers are public on the ranking, so the birth date is checked as well.
+  const savedBirth = sameDate(snap.data()?.birthDate ?? snap.data()?.["生年月日"]);
+  if (
+    !snap.exists ||
+    !saved ||
+    saved.trim().toLowerCase() !== email.toLowerCase() ||
+    !savedBirth ||
+    savedBirth !== birthDate
+  ) {
     await recordFailure("reset", licenseNo);
     return {
-      message: "ライセンスNo.とメールアドレスの組み合わせが登録内容と一致しません。",
+      message:
+        "ライセンスNo.・メールアドレス・生年月日のどれかが登録内容と一致しません。わからないときは事務局にお問い合わせください。",
       values: withoutSecrets(values),
     };
   }

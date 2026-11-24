@@ -11,6 +11,7 @@ const ITEMS = [
   { href: "/admin/venues", label: "会場" },
   { href: "/admin/tnfc", label: "TNFC" },
   { href: "/admin/news", label: "NEWS" },
+  { href: "/admin/pages", label: "ページ" },
   { href: "/admin/analytics", label: "分析" },
   { href: "/admin/posters", label: "ポスター" },
   { href: "/admin/tools/pop-a4", label: "A4 POP" },

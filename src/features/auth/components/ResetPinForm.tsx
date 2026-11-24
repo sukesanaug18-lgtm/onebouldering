@@ -45,6 +45,16 @@ export function ResetPinForm() {
         error={state.errors?.email}
         required
       />
+      <Field
+        label="生年月日"
+        name="birthDate"
+        type="date"
+        autoComplete="bday"
+        defaultValue={v.birthDate}
+        error={state.errors?.birthDate}
+        hint="会員登録のときに入れた生年月日です。"
+        required
+      />
       <div className="grid gap-5 sm:grid-cols-2">
         <Field
           label="新しい暗証番号（4桁）"

@@ -3,16 +3,9 @@ import { connection } from "next/server";
 import { cacheLife, cacheTag } from "next/cache";
 import { parseRankingCache, type RankingCacheData } from "@/domain/ranking";
 import { adminDb } from "@/server/firebase-admin";
+import { withTimeout } from "@/server/timeout";
 
 export type Venue = { id: string; name: string; region: string; visible: boolean };
-
-/** Firestore retries for a long time when it cannot connect; give up after 5s. */
-function withTimeout<T>(p: Promise<T>, ms = 5000): Promise<T> {
-  return Promise.race([
-    p,
-    new Promise<T>((_, reject) => setTimeout(() => reject(new Error("Firestore timeout")), ms)),
-  ]);
-}
 
 // The cached loaders throw on errors so a failed read is never cached;
 // the exported functions catch and return an empty result instead.

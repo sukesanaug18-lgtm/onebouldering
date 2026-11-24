@@ -40,6 +40,7 @@ export const ResetPinSchema = z
   .object({
     licenseNo,
     email: z.email({ error: "メールアドレスを正しく入力してください。" }).trim(),
+    birthDate: z.iso.date({ error: "生年月日を入力してください。" }),
     pin,
     pinConfirm: z.string(),
   })

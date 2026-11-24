@@ -7,6 +7,7 @@ import { GYMS } from "@/content/gyms";
 import { POP_FOOTER, POP_POINTS } from "@/content/pop";
 import { popPages, POP_REGIONS, type PopPage } from "@/domain/pop";
 import { PrintButton } from "@/features/pop/components/PrintButton";
+import { RankingLogo } from "@/components/ui/RankingLogo";
 import { PageSkeleton } from "@/features/tnfc/components/Parts";
 import { listAdminVenues } from "@/features/venue/queries";
 import { cn } from "@/lib/cn";
@@ -34,14 +35,7 @@ function PopSheet({ page, qr, url }: { page: PopPage; qr: string; url: string })
       <header className="bg-[#1d1d1f] px-[14mm] pt-[10mm] pb-[7mm] text-white">
         {/* Ranking official logo (design rule: always on Ranking material; white on dark). */}
         <div className="flex items-end gap-[4mm]">
-          <Image
-            src="/brand/onebouldering_ranking_logo_white.png"
-            alt="ONE bouldering Ranking"
-            width={490}
-            height={220}
-            className="h-[16mm] w-auto"
-            priority
-          />
+          <RankingLogo tone="dark" className="h-[16mm]" />
           <p className="pb-[1mm] font-display text-[11pt] font-bold tracking-[0.2em] text-[#FF8C3F]">
             SEASON {seasonLabel(CURRENT_SEASON_ID)}
           </p>

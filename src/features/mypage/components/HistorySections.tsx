@@ -88,9 +88,12 @@ export async function TnfcEntries({ userId, seasonId }: { userId: string; season
                     本戦出場権
                   </span>
                 )}
-                <span className="ml-2 text-text-2">
-                  Ranking +{e.result.points.toLocaleString()}pt
-                </span>
+                {/* Finals results carry no Ranking points. */}
+                {e.result.points > 0 && (
+                  <span className="ml-2 text-text-2">
+                    Ranking +{e.result.points.toLocaleString()}pt
+                  </span>
+                )}
               </p>
             )}
           </li>

@@ -73,6 +73,8 @@ export async function importResults(
   const cutoffs = readCutoffs(formData.get("cutoffs"));
   const results = scoreResults(parsed.rows, cutoff, cutoffs);
 
+  // Finals results are recorded but add no Ranking points (only qualifiers do).
+  const isFinals = round.roundNumber >= 90;
   const db = adminDb();
   const now = new Date().toISOString();
   const compName = `${round.roundName}（${round.venueName}）`;
@@ -95,12 +97,15 @@ export async function importResults(
     const stale = [...new Set([...oldResultById.keys(), ...oldCompById.keys()])].filter(
       (id) => !keep.has(id),
     );
-    for (let i = 0; i < stale.length; i += BATCH) {
+    // Points written for the finals by an earlier import are removed as well.
+    const compDeletes = isFinals ? [...oldCompById.keys()] : stale;
+    const deletes = [
+      ...stale.map((id) => db.collection("tnfc_results").doc(id)),
+      ...compDeletes.map((id) => db.collection("competition_results").doc(id)),
+    ];
+    for (let i = 0; i < deletes.length; i += BATCH) {
       const batch = db.batch();
-      for (const id of stale.slice(i, i + BATCH)) {
-        batch.delete(db.collection("tnfc_results").doc(id));
-        batch.delete(db.collection("competition_results").doc(id));
-      }
+      for (const ref of deletes.slice(i, i + BATCH)) batch.delete(ref);
       await batch.commit();
     }
 
@@ -129,12 +134,13 @@ export async function importResults(
             before?.status !== "cancelled_finals" &&
             (r.qualified || before?.promotedToFinals === true),
           ...(before?.promotedToFinals ? { promotedToFinals: true } : {}),
-          rankingPointsAwarded: r.points,
+          rankingPointsAwarded: isFinals ? 0 : r.points,
           // A finalist who declined stays declined when the list is imported again.
           status: before?.status === "cancelled_finals" ? "cancelled_finals" : "active",
           createdAt: before?.createdAt ?? now,
           updatedAt: now,
         });
+        if (isFinals) continue;
         batch.set(db.collection("competition_results").doc(id), {
           seasonId: round.seasonId,
           roundId: round.id,
@@ -187,9 +193,10 @@ export async function importResults(
     await rebuildRankingCache(round.seasonId);
     updateTag("ranking");
     revalidatePath(`/admin/tnfc/${round.id}`, "layout");
+    updateTag("tnfc"); // public schedule and results
     const notes = [
       round.roundNumber >= 90
-        ? `${results.length}人の本戦リザルトを確定し、Ranking ポイントを付与しました。Division 昇格は「本戦」のページで行います。`
+        ? `${results.length}人の本戦リザルトを確定しました（本戦は Ranking ポイントに反映しません）。Division 昇格は「本戦」のページで行います。`
         : `${results.length}人のリザルトを確定し、本戦出場者${finalists}人を決めて、Ranking ポイントを付与しました。`,
       stale.length > 0 ? `前回の取り込みにいて今回いない${stale.length}人の結果は消しました。` : "",
       parsed.unknownIds.length > 0

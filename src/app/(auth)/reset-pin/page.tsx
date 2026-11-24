@@ -10,10 +10,10 @@ export default function ResetPinPage() {
     <AuthShell
       eyebrow="Reset PIN"
       title="暗証番号の再設定"
-      lead="登録したライセンスNo.とメールアドレスを確認して、新しい暗証番号を設定します。"
+      lead="登録したライセンスNo.・メールアドレス・生年月日を確認して、新しい暗証番号を設定します。"
       footer={
         <>
-          メールアドレスがわからない方は
+          登録内容がわからない方は
           <a
             href="https://www.onebouldering.jp/contact/"
             target="_blank"
