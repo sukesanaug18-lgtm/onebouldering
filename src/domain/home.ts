@@ -165,16 +165,17 @@ export function buildRankingTop(
     if (!div) continue;
     const entries = [...data.global[div]].sort((a, b) => b.score - a.score);
     const rows: TopRow[] = [];
-    entries.forEach((e, i) => {
-      const rank = i > 0 && e.score === entries[i - 1].score ? rows[i - 1].rank : i + 1;
-      if (rank > 3) return;
+    let rank = 0;
+    for (const [i, e] of entries.entries()) {
+      if (i === 0 || e.score !== entries[i - 1].score) rank = i + 1;
+      if (rank > 3) break;
       let best = { gym: "", score: -1 };
       for (const [gymId, byDiv] of Object.entries(data.gym ?? {})) {
-        const mine = byDiv[div]?.find((x) => x.id === e.id);
+        const mine = byDiv?.[div]?.find((x) => x.id === e.id);
         if (mine && mine.score > best.score) best = { gym: venueName(gymId), score: mine.score };
       }
       rows.push({ rank, name: e.name, gym: best.gym, points: e.score });
-    });
+    }
     groups.push({ label: divisionName(div), rows });
   }
   return groups;

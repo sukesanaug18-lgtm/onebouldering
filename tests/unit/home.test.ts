@@ -89,5 +89,15 @@ it("buildRankingTop takes the top 3 of the highest division per gender", () => {
     [2, "選手c", ""],
     [2, "選手d", ""],
   ]);
+  // Ties below 3rd place (4th and 5th equal) must not break the list.
+  const tied = buildRankingTop(
+    {
+      global: { "Men‘s Division 1": [e("a", 9), e("b", 8), e("c", 7), e("d", 5), e("f", 5)] },
+      region: {},
+      gym: {},
+    } as never,
+    () => "",
+  );
+  expect(tied[0].rows.map((r) => r.rank)).toEqual([1, 2, 3]);
   expect(buildRankingTop(null, () => "")).toEqual([]);
 });
