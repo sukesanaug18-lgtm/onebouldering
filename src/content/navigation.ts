@@ -36,7 +36,7 @@ export const MENU_GROUPS: { title: string; items: NavItem[] }[] = [
     items: [
       { href: "/news", label: "NEWS" },
       { href: "/prizes", label: "協賛景品" },
-      { href: "/sponsors", label: "オフィシャルスポンサー" },
+      { href: "/sponsors", label: "協賛企業" },
       { href: "https://www.onebouldering.jp/contact/", label: "お問い合わせ", external: true },
     ],
   },

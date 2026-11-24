@@ -75,7 +75,9 @@ async function Finals({ top }: { top: number }) {
                   <th className="py-2 pl-5 font-medium md:pl-6">カテゴリー</th>
                   <th className="py-2 font-medium">氏名・ID</th>
                   <th className="py-2 font-medium">予選</th>
-                  <th className="py-2 pr-5 font-medium md:pr-6">辞退したときの次点</th>
+                  <th className="py-2 pr-5 font-medium md:pr-6">
+                    次点（BJC で Division 1 に上がったときだけ）
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
@@ -110,7 +112,7 @@ async function Finals({ top }: { top: number }) {
       {finalists.length > 0 && (
         <Block
           title="本戦辞退の受付（1.3）"
-          description="辞退を記録するとキャンセル台帳に入ります。次点を繰り上げると、その人に通知が届きます。"
+          description="辞退を記録するとキャンセル台帳に入ります。本戦出場をキャンセルした人が出ても、繰り上げ出場はありません（大会要項）。例外は、出場権を持つ選手が BOULDER JAPAN CUP の出場が決まって Division 1 に上がった場合だけで、そのときは次点を繰り上げ、その人に通知が届きます。"
         >
           <DeclinePanel
             finalists={finalists.map((f) => ({

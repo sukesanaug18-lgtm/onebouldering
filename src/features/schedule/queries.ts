@@ -20,6 +20,8 @@ export type PublicRound = {
   entryDeadline: string;
   finals: boolean;
   hasResults: boolean;
+  /** tnfc_rounds status (entry_open while entries are taken). */
+  status: string;
 };
 
 export type ScheduleVenue = { id: string; name: string; period: string };
@@ -44,6 +46,7 @@ function toRound(id: string, d: FirebaseFirestore.DocumentData): PublicRound {
     entryDeadline: text(d.entryDeadline),
     finals: roundNumber >= 90,
     hasResults: Boolean(d.resultsImportedAt),
+    status: text(d.status),
   };
 }
 
@@ -78,6 +81,7 @@ async function loadRounds(seasonId: string): Promise<PublicRound[]> {
         "eventDate",
         "entryDeadline",
         "resultsImportedAt",
+        "status",
       )
       .get(),
   );

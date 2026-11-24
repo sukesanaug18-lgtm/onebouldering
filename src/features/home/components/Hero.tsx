@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { Phrase } from "@/components/ui/Phrase";
+import { CURRENT_SEASON_ID, seasonLabel } from "@/lib/season";
 
 /**
  * Top hero (CLAUDE.md 5-1). Dark, as on the current site.
@@ -27,17 +27,12 @@ export function Hero() {
             </Badge>
           </li>
         </ul>
-        <h1 className="mt-8 max-w-[14em] text-[clamp(2.25rem,1.4rem+3.6vw,4.5rem)] leading-[1.15] font-bold tracking-tight">
-          <Phrase>3つのイベントに、</Phrase>
-          <br />
-          <Phrase>ひとつの入口。</Phrase>
+        <h1 className="mt-8 text-[clamp(2.25rem,1.4rem+3.6vw,4.5rem)] leading-[1.15] font-bold tracking-tight">
+          ONE Bouldering
+          <span className="mt-2 block font-display text-[0.5em] font-bold text-white/70 tabular-nums">
+            {seasonLabel(CURRENT_SEASON_ID)} シーズン
+          </span>
         </h1>
-        <p className="mt-6 max-w-[34em] text-white/70 md:text-lg">
-          <Phrase>
-            選手登録はひとつ。Division Tryout のクラスも、Ranking のスコアも、THE NORTH FACE CUP
-            の結果も、すべてつながります。
-          </Phrase>
-        </p>
         <div className="mt-10 flex flex-wrap gap-3">
           <Button href="/join" variant="inverse" size="lg">
             はじめての方へ

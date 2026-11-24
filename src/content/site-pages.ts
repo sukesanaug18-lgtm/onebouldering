@@ -130,8 +130,19 @@ const PRIZES = `## 協賛景品
 
 協賛のご相談は${CONTACT}からご連絡ください。`;
 
-const SPONSORS = `## オフィシャルスポンサー
+const SPONSORS = `THE NORTH FACE CUP と ONE bouldering Ranking では、協賛していただいている企業が違います。各イベントのページにもロゴを載せています。
+
+## THE NORTH FACE CUP
 - THE NORTH FACE（株式会社ゴールドウイン）
+- Jazzy Sport
+- New-HALE
+- LA SPORTIVA
+- Vibram
+
+## ONE bouldering Ranking
+- New-HALE
+- re:white
+- SAVAS
 
 ## 主催
 - 株式会社BaseCamp
@@ -169,8 +180,8 @@ export const SITE_PAGES: Record<SitePageSlug, SitePageDefault> = {
     slug: "sponsors",
     path: "/sponsors",
     eyebrow: "Sponsors",
-    title: "オフィシャルスポンサー",
-    lead: "ONE Bouldering を支えてくださるスポンサーの皆さまです。",
+    title: "協賛企業",
+    lead: "ONE Bouldering のイベントを支えてくださる企業の皆さまです（イベントごとに異なります）。",
     body: SPONSORS,
   },
   schedule: {

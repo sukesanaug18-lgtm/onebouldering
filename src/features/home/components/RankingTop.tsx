@@ -3,12 +3,14 @@ import { Section } from "@/components/layout/Section";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { SectionHeading } from "@/components/ui/SectionHeading";
-import type { RankingRow } from "@/content/home-sample";
+import type { TopGroup } from "@/domain/home";
 import { cn } from "@/lib/cn";
-import { SampleNote } from "./SampleNote";
 
-/** National top 3 (CLAUDE.md 5-5). */
-export function RankingTop({ groups }: { groups: { label: string; rows: RankingRow[] }[] }) {
+/**
+ * National top 3 (CLAUDE.md 5-5). Without groups it shows placeholders (loading);
+ * with none it says the season has no scores yet.
+ */
+export function RankingTop({ groups }: { groups?: TopGroup[] }) {
   return (
     <Section tone="subtle" aria-labelledby="ranking-title">
       <SectionHeading
@@ -21,9 +23,24 @@ export function RankingTop({ groups }: { groups: { label: string; rows: RankingR
           </Button>
         }
       />
-      <SampleNote />
-      <div className="mt-10 grid gap-4 md:grid-cols-2">
-        {groups.map((group, gi) => (
+      {groups && groups.length === 0 && (
+        <p className="mt-10 text-sm text-text-2">
+          今シーズンのスコアはまだありません。集計が始まると、ここに上位の選手が表示されます。
+        </p>
+      )}
+      <div className="mt-10 grid gap-4 md:grid-cols-2" aria-busy={!groups}>
+        {!groups &&
+          [0, 1].map((i) => (
+            <Card key={i} accent="ranking" padding="lg">
+              <div className="h-5 w-32 animate-pulse rounded bg-line" />
+              <div className="mt-6 space-y-5">
+                {[0, 1, 2].map((j) => (
+                  <div key={j} className="h-9 animate-pulse rounded bg-line" />
+                ))}
+              </div>
+            </Card>
+          ))}
+        {groups?.map((group, gi) => (
           <FadeIn key={group.label} delay={gi * 0.06}>
             <Card accent="ranking" padding="lg">
               <h3 className="font-bold">{group.label}</h3>

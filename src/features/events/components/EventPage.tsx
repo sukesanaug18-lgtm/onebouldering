@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/Card";
 import { RankingLogo } from "@/components/ui/RankingLogo";
 import { Phrase } from "@/components/ui/Phrase";
 import { SectionHeading } from "@/components/ui/SectionHeading";
+import { EVENT_SPONSORS } from "@/content/sponsors";
 import { cn } from "@/lib/cn";
 import type { EventPageContent } from "../types";
 
@@ -25,6 +26,7 @@ const IN_PAGE = [
   { id: "schedule", label: "日程・会場" },
   { id: "rules", label: "ルール" },
   { id: "faq", label: "よくある質問" },
+  { id: "sponsors", label: "協賛" },
 ];
 
 function PosterImage({ poster, name }: { poster: Poster; name: string }) {
@@ -51,6 +53,8 @@ export function EventPage({
   content: EventPageContent;
   poster?: Poster | null;
 }) {
+  const sponsors = EVENT_SPONSORS[c.key];
+  const inPage = sponsors.length ? IN_PAGE : IN_PAGE.filter((l) => l.id !== "sponsors");
   return (
     <main>
       {/* Header */}
@@ -92,7 +96,7 @@ export function EventPage({
             </div>
             <nav aria-label="このページの目次" className="-mx-5 mt-10 overflow-x-auto px-5">
               <ul className="flex gap-2">
-                {IN_PAGE.map((l) => (
+                {inPage.map((l) => (
                   <li key={l.id}>
                     <a
                       href={`#${l.id}`}
@@ -326,6 +330,38 @@ export function EventPage({
           </div>
         </FadeIn>
       </Section>
+
+      {/* Sponsors of this event (TNFC and Ranking differ) */}
+      {sponsors.length > 0 && (
+        <Section id="sponsors" aria-labelledby="sponsors-title" className="scroll-mt-16">
+          <SectionHeading id="sponsors-title" eyebrow="Sponsors" title="協賛" />
+          <FadeIn className="mt-8">
+            <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+              {sponsors.map((s) => (
+                <li
+                  key={s.name}
+                  className="flex h-24 items-center justify-center rounded-2xl border border-line bg-white px-6"
+                >
+                  {s.logo ? (
+                    <Image
+                      src={s.logo}
+                      alt={s.name}
+                      width={240}
+                      height={80}
+                      className="max-h-10 w-auto object-contain"
+                    />
+                  ) : (
+                    <span className="text-center font-display font-bold tracking-tight">
+                      {s.name}
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </FadeIn>
+          {c.key === "tnfc" && <p className="mt-6 text-sm text-text-3">主催：株式会社BaseCamp</p>}
+        </Section>
+      )}
 
       {/* Join (PC) */}
       <section className="hidden border-t border-line lg:block">

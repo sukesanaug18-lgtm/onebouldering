@@ -184,11 +184,14 @@ export type DeclineTarget = {
   next: { id: string; label: string } | null;
 };
 
-/** 1.3 A finalist declines; the next player of the same round and category can move up. */
+/**
+ * 1.3 A finalist declines. No one moves up (competition rules), except when the finalist went up
+ * to Division 1 for the BOULDER JAPAN CUP: only then is the next player moved up.
+ */
 export function DeclinePanel({ finalists }: { finalists: DeclineTarget[] }) {
   const [state, action, pending] = useActionState<OpsState, FormData>(declineFinalist, {});
   const [resultId, setResultId] = useState("");
-  const [promote, setPromote] = useState(true);
+  const [promote, setPromote] = useState(false);
   const picked = finalists.find((f) => f.id === resultId);
   return (
     <form
@@ -217,7 +220,10 @@ export function DeclinePanel({ finalists }: { finalists: DeclineTarget[] }) {
           <select
             id="dec-who"
             value={resultId}
-            onChange={(e) => setResultId(e.target.value)}
+            onChange={(e) => {
+              setResultId(e.target.value);
+              setPromote(false);
+            }}
             className={selectClass}
           >
             <option value="">選んでください</option>
@@ -240,7 +246,7 @@ export function DeclinePanel({ finalists }: { finalists: DeclineTarget[] }) {
             className="size-5 accent-text"
           />
           {picked.next
-            ? `次点を繰り上げる：${picked.next.label}`
+            ? `BOULDER JAPAN CUP 出場で Division 1 に上がったため、次点を繰り上げる：${picked.next.label}`
             : "同じ予選・カテゴリーに繰り上げられる人はいません"}
         </label>
       )}

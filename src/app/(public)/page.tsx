@@ -8,7 +8,7 @@ import { RankingTop } from "@/features/home/components/RankingTop";
 import { Upcoming } from "@/features/home/components/Upcoming";
 import { GYMS } from "@/content/gyms";
 import { getLatestNews } from "@/features/news/queries";
-import { SAMPLE_RANKING, SAMPLE_SPONSORS, SAMPLE_UPCOMING } from "@/content/home-sample";
+import { getHomeRankingTop, getHomeUpcoming } from "@/features/home/queries";
 
 /** Top page: the hub for the three events (CLAUDE.md 5). Section order follows the design doc. */
 async function LatestNews() {
@@ -25,18 +25,30 @@ async function LatestNews() {
   );
 }
 
+async function UpcomingSection() {
+  return <Upcoming items={await getHomeUpcoming()} />;
+}
+
+async function RankingSection() {
+  return <RankingTop groups={await getHomeRankingTop()} />;
+}
+
 export default function Home() {
   return (
     <main>
       <Hero />
       <EventCards />
       <Journey />
-      <Upcoming items={SAMPLE_UPCOMING} />
-      <RankingTop groups={SAMPLE_RANKING} />
+      <Suspense fallback={<Upcoming />}>
+        <UpcomingSection />
+      </Suspense>
+      <Suspense fallback={<RankingTop />}>
+        <RankingSection />
+      </Suspense>
       <Suspense fallback={<NewsList />}>
         <LatestNews />
       </Suspense>
-      <Partners sponsors={SAMPLE_SPONSORS} gyms={GYMS} />
+      <Partners gyms={GYMS} />
     </main>
   );
 }
