@@ -34,7 +34,7 @@ it("counts players per gym and Division, send rates and hours in Japan time", ()
   expect(a.gymsPerPlayer).toBe(2);
   expect(a.venues.map((v) => [v.id, v.players, v.avgPoints])).toEqual([
     ["a", 1, 3],
-    ["b", 1, 1],
+    ["b", 1, 0], // Pending only: no approved points yet
   ]);
   expect(a.divisions.map((d) => [d.division, d.registered, d.active])).toEqual([
     ["Men‘s Division 3", 2, 1],

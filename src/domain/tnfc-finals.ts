@@ -162,6 +162,10 @@ export function aggregateFinalists(results: QualifierResult[]): {
     waiting.set(key, [...(waiting.get(key) ?? []), r]);
   }
   for (const list of waiting.values()) list.sort((a, b) => a.rank - b.rank);
+  // A player who qualified in another round is already in the finals, so never an alternate.
+  const qualified = new Set(results.filter((r) => r.qualified && !r.declined).map((r) => r.userId));
+  const nextOf = (r: QualifierResult) =>
+    waiting.get(`${r.roundId}\u0000${r.division}`)?.find((w) => !qualified.has(w.userId)) ?? null;
 
   const seen = new Set<string>();
   const finalists: Finalist[] = [];
@@ -174,7 +178,7 @@ export function aggregateFinalists(results: QualifierResult[]): {
   for (const r of sorted) {
     if (!r.qualified || r.declined || seen.has(r.userId)) continue;
     seen.add(r.userId);
-    finalists.push({ ...r, next: waiting.get(`${r.roundId}\u0000${r.division}`)?.[0] ?? null });
+    finalists.push({ ...r, next: nextOf(r) });
   }
   return { finalists, declined: sorted.filter((r) => r.declined) };
 }

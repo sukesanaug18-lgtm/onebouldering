@@ -40,6 +40,17 @@ describe("aggregateFinalists", () => {
     expect(finalists.find((f) => f.userId === "w")!.next).toBeNull();
     expect(declined.map((d) => d.userId)).toEqual(["x"]);
   });
+
+  it("skips alternates who already qualified in another round", () => {
+    const results = [
+      r({ userId: "a", rank: 1, qualified: true }),
+      r({ userId: "b", rank: 2 }), // in the finals through round 2
+      r({ userId: "c", rank: 3 }),
+      r({ roundId: "r2", roundNumber: 2, userId: "b", rank: 1, qualified: true }),
+    ];
+    const { finalists } = aggregateFinalists(results);
+    expect(finalists.find((f) => f.userId === "a")!.next?.userId).toBe("c");
+  });
 });
 
 describe("finalsPromotions", () => {

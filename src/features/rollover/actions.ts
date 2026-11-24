@@ -41,6 +41,9 @@ export async function applyRollover(
   const label = seasonLabel(nextSeasonId);
   let done = 0;
   try {
+    // Save this season's final ranking with the divisions players competed in, before any
+    // division changes. From here on the season's ranking_cache is frozen (ranking-cache.ts).
+    if (!record?.startedAt) await rebuildRankingCache(CURRENT_SEASON_ID);
     await recordRef.set(
       { nextSeasonId, startedAt: record?.startedAt || now, by: admin.email },
       { merge: true },
@@ -82,7 +85,6 @@ export async function applyRollover(
       count: done,
       changes: changes.map((c) => ({ userId: c.userId, from: c.from, to: c.to, reason: c.reason })),
     });
-    await rebuildRankingCache(CURRENT_SEASON_ID);
     updateTag("ranking");
     updateTag("members");
     revalidatePath("/admin/rollover");

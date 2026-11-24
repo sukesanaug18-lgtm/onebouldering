@@ -28,7 +28,8 @@ async function Entry({ searchParams }: { searchParams: PageProps<"/entry">["sear
   const venue = await getVenue(venueId);
   if (!venue) return <NoVenue unknown={Boolean(venueId)} />;
 
-  const here = `/entry?venue=${encodeURIComponent(venue.id)}`;
+  // Keep the QR result through the login, so the warning is still shown afterwards.
+  const here = `/entry?venue=${encodeURIComponent(venue.id)}${qr ? `&qr=${qr}` : ""}`;
   const user = await getCurrentUser();
   const decision = decideEntry({
     loggedIn: Boolean(user),
@@ -44,7 +45,7 @@ async function Entry({ searchParams }: { searchParams: PageProps<"/entry">["sear
 
   return (
     <EntryShell eyebrow="Check-in" venue={venue}>
-      {qr && decision.kind === "choose" && (
+      {qr && (decision.kind === "choose" || decision.kind === "login") && (
         <div className="mb-4">
           <FormMessage tone="error">
             この QR コードは使えません。ジムに貼ってある最新の QR

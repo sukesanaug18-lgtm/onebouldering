@@ -220,7 +220,7 @@ onebouldering/
 
 **A4 POP**：`/admin/tools/pop-a4`。会場の Ranking 開催期間から地域別の開催スケジュール（A4 縦1枚＝1地域、ロゴ・期間・参加のポイント・公式サイトの QR）を作り、ブラウザで印刷／PDF 保存。ジム数に応じて行の大きさを変え、1地域およそ12ジムまで1枚に収まる。文言は `src/content/pop.ts`。ロゴは今は `src/content/gyms.ts` を名前で照合（データのコピーでロゴを新プロジェクトの Storage に複製したら会場データから読む）。
 
-**年度更新（図B-7 1.5.1〜1.5.2）**：`/admin/rollover`。次シーズン（CURRENT_SEASON_ID+1）への切り替えで、Men‘s Division 4・5 と Women‘s Division 3・4 を UNDECIDED（divisionStatus undecided、Tryout を受け直し）、U カテゴリーは次シーズン末の4月1日時点の年齢で決め直し（16歳以上は UNDECIDED）。生年月日がない・おかしい U の人は変更せず「確認が必要」に出す。ロジックは `src/domain/rollover.ts`。プレビュー → 一括実行（users 更新・本人通知・admin_logs・ランキング再構築）。実行記録 `site_settings/rollover_${次シーズン}` があれば2回目は不可（途中で止まった場合だけ続きを実行できる）。本戦の昇格は先に反映する運用。
+**年度更新（図B-7 1.5.1〜1.5.2）**：`/admin/rollover`。次シーズン（CURRENT_SEASON_ID+1）への切り替えで、Men‘s Division 4・5 と Women‘s Division 3・4 を UNDECIDED（divisionStatus undecided、Tryout を受け直し）、U カテゴリーは次シーズン末の4月1日時点の年齢で決め直し（16歳以上は UNDECIDED）。生年月日がない・おかしい U の人は変更せず「確認が必要」に出す。ロジックは `src/domain/rollover.ts`。プレビュー → 一括実行（実行前に当シーズンの ranking_cache を保存 → users 更新・本人通知・admin_logs）。実行を始めた時点（`rollover_${次シーズン}` の startedAt）で当シーズンの ranking_cache は凍結され、以後の承認などでも作り直さない（変更後の Division で最終ランキングが崩れるのを防ぐ。`src/server/ranking-cache.ts`）。年度更新はシーズンの提出・承認が終わってから行い、続けて CURRENT_SEASON_ID を次シーズンに切り替える。実行記録 `site_settings/rollover_${次シーズン}` があれば2回目は不可（途中で止まった場合だけ続きを実行できる）。本戦の昇格は先に反映する運用。
 
 **事務局メンバー**：`/admin/staff`。事務局 = Firebase Auth の custom claim `admin: true`。メールアドレスで追加（アカウントがなければパスワードなしで作成）→ パスワード設定メール（Auth の PASSWORD_RESET、日本語）を送信。再送・権限を外す（本人は外せない、refresh token 失効）も同じ画面。admin_logs に staff_add / staff_mail / staff_remove。本人が使う `/admin/login/password` は、登録の有無を明かさず、事務局アカウントにだけメールを送る（5回で15分ロック）。ロジックは `src/features/admin/staff.ts` と `actions.ts`。
 

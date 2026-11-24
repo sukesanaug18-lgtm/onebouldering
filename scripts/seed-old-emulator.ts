@@ -96,6 +96,20 @@ const docs: [string, string, Record<string, unknown>][] = [
       content: "<p>下書き本文</p>",
     },
   ],
+  // The same article also in news_articles (old format): must merge into one article.
+  // The thumbnail host does not exist, so the copy reports it instead of stopping.
+  [
+    "news_articles",
+    "20261017_launch",
+    {
+      title: "（旧データ）公式NEWSページを新設しました",
+      category: "お知らせ",
+      status: "published",
+      publishedAt: "2026-10-17",
+      content: "<p>NEWS ページを新設</p>",
+      thumbnailUrl: "https://old-images.invalid/launch.png",
+    },
+  ],
 ];
 for (const [c, id, d] of docs) await db.collection(c).doc(id).set(d);
 // A reference field, to check it is re-pointed at the target project.

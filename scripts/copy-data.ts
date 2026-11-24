@@ -7,6 +7,8 @@
 //          --source-key <file>   service-account JSON for the source (default: gcloud ADC)
 //          --target-key <file>   service-account JSON for the target (default: gcloud ADC)
 //          --season 2027         season used to rebuild ranking_cache afterwards
+//          --target-bucket <b>   Storage bucket for copied NEWS images
+//                                (default: <target>.firebasestorage.app)
 //          --emulator            both projects on the local Emulator (both must be demo-*)
 //
 // Safety:
@@ -15,18 +17,19 @@
 //   Nothing in the target is deleted; documents only the new site has stay as they are.
 // - Plain PINs / gym passwords are stored as hashes; the GA4 settings (they hold a private key)
 //   are not copied. ranking_cache is rebuilt from the copied data instead of copied.
+// - Old NEWS thumbnails are downloaded (read only) and saved as the article image in the
+//   target bucket. counters/licenseNo is moved past the highest copied license number.
 import { cert, initializeApp, applicationDefault, type App } from "firebase-admin/app";
-import {
-  DocumentReference,
-  FieldPath,
-  getFirestore,
-  type Firestore,
-} from "firebase-admin/firestore";
+import { getStorage } from "firebase-admin/storage";
+import { DocumentReference, FieldPath, getFirestore } from "firebase-admin/firestore";
+import { randomBytes } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { parseArgs } from "node:util";
+import sharp from "sharp";
 import {
   COPY_COLLECTIONS,
   isOldNewsDoc,
+  newsIdFromOld,
   oldNewsToArticle,
   plainSecret,
   SKIPPED_SETTINGS,
@@ -34,7 +37,9 @@ import {
   VENUE_PASSWORD_FIELDS,
   type CopyCollection,
 } from "../src/domain/data-copy.ts";
+import { nextLicenseNo } from "../src/domain/member.ts";
 import { aggregateRankingData } from "../src/domain/ranking.ts";
+import { NEWS_ID, newsImagePath } from "../src/features/news/paths.ts";
 import { hashPin } from "../src/server/crypto.ts";
 
 type Doc = Record<string, unknown>;
@@ -48,6 +53,7 @@ const { values: args } = parseArgs({
     "source-key": { type: "string" },
     "target-key": { type: "string" },
     season: { type: "string", default: process.env.CURRENT_SEASON_ID ?? "2027" },
+    "target-bucket": { type: "string" },
     emulator: { type: "boolean", default: false },
   },
 });
@@ -65,6 +71,7 @@ if (args.emulator) {
   if (!SOURCE.startsWith("demo-") || !TARGET.startsWith("demo-"))
     fail("--emulator では demo- で始まるプロジェクトだけ使えます");
   process.env.FIRESTORE_EMULATOR_HOST ??= "127.0.0.1:8080";
+  process.env.FIREBASE_STORAGE_EMULATOR_HOST ??= "127.0.0.1:9199";
 } else if (process.env.FIRESTORE_EMULATOR_HOST) {
   fail(
     "FIRESTORE_EMULATOR_HOST が設定されています。Emulator で試すときは --emulator を付けてください",
@@ -78,17 +85,18 @@ for (const name of only ?? []) {
 }
 const collections = COPY_COLLECTIONS.filter((c) => !only || only.has(c));
 
-function open(name: string, projectId: string, keyFile?: string): Firestore {
+function open(name: string, projectId: string, keyFile?: string): App {
   const credential = args.emulator
     ? undefined
     : keyFile
       ? cert(JSON.parse(readFileSync(keyFile, "utf8")))
       : applicationDefault();
-  const app: App = initializeApp({ projectId, ...(credential ? { credential } : {}) }, name);
-  return getFirestore(app);
+  return initializeApp({ projectId, ...(credential ? { credential } : {}) }, name);
 }
-const src = open("source", SOURCE, args["source-key"]);
-const dst = open("target", TARGET, args["target-key"]);
+const src = getFirestore(open("source", SOURCE, args["source-key"]));
+const dstApp = open("target", TARGET, args["target-key"]);
+const dst = getFirestore(dstApp);
+const TARGET_BUCKET = args["target-bucket"] ?? `${TARGET}.firebasestorage.app`;
 
 /** Reads a whole collection in pages (read only). */
 async function readAll(name: string): Promise<{ id: string; data: Doc }[]> {
@@ -115,7 +123,9 @@ function retarget(v: unknown): unknown {
 }
 
 type Plan = { collection: string; id: string; data: Doc };
-const plans: Plan[] = [];
+// Keyed by collection/id: the same old NEWS article can live in both site_settings and
+// news_articles; both land on one id and are merged instead of becoming two articles.
+const planned = new Map<string, Plan>();
 const notes: string[] = [];
 const hashes = new Map<string, string>();
 const hashOf = async (s: string) => hashes.get(s) ?? hashes.set(s, await hashPin(s)).get(s)!;
@@ -164,10 +174,15 @@ async function prepare(name: CopyCollection) {
         skipped++;
         continue;
       }
-      docId = id.toLowerCase().replace(/[^a-z0-9-]+/g, "-");
+      docId = a.id;
       d = a.data;
+    } else if (name === "news_articles" && !NEWS_ID.test(id)) {
+      // New-format article whose id the site would not open (404); give it a valid id.
+      docId = newsIdFromOld(id);
     }
-    plans.push({ collection, id: docId, data: d });
+    const key = `${collection}/${docId}`;
+    const prev = planned.get(key);
+    planned.set(key, { collection, id: docId, data: prev ? { ...prev.data, ...d } : d });
   }
   const extra = [hashed && `ハッシュ化 ${hashed}`, skipped && `コピーしない ${skipped}`]
     .filter(Boolean)
@@ -181,6 +196,7 @@ console.log(
   `コピー元: ${SOURCE}（読むだけ）→ コピー先: ${TARGET}${args.emulator ? "（Emulator）" : ""}`,
 );
 for (const c of collections) await prepare(c);
+const plans = [...planned.values()];
 console.log(notes.join("\n"));
 const news = plans.filter((p) => p.collection === "news_articles").length;
 console.log(`→ 書き込む文書 ${plans.length} 件（うち NEWS ${news} 件）`);
@@ -197,6 +213,59 @@ for (let i = 0; i < plans.length; i += 400) {
   for (const p of plans.slice(i, i + 400))
     batch.set(dst.collection(p.collection).doc(p.id), p.data);
   await batch.commit();
+}
+
+// Old NEWS thumbnails → the article image the site shows (same format as the office upload).
+const bucket = getStorage(dstApp).bucket(TARGET_BUCKET);
+let images = 0;
+const imageFailures: string[] = [];
+for (const p of plans) {
+  const url = p.collection === "news_articles" ? String(p.data.oldThumbnailUrl ?? "") : "";
+  if (!/^https:\/\//.test(url) || p.data.image) continue;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const out = await sharp(Buffer.from(await res.arrayBuffer()), { limitInputPixels: 80_000_000 })
+      .rotate()
+      .resize({ width: 1600, withoutEnlargement: true })
+      .webp({ quality: 85 })
+      .toBuffer({ resolveWithObject: true });
+    await bucket.file(newsImagePath(p.id)).save(out.data, {
+      contentType: "image/webp",
+      resumable: false,
+      metadata: { cacheControl: "no-cache" },
+    });
+    await dst
+      .collection("news_articles")
+      .doc(p.id)
+      .update({
+        image: {
+          version: `${Date.now().toString(36)}${randomBytes(2).toString("hex")}`,
+          width: out.info.width,
+          height: out.info.height,
+        },
+      });
+    images++;
+  } catch (err) {
+    imageFailures.push(`${p.id}（${(err as Error).message}）`);
+  }
+}
+if (images || imageFailures.length) {
+  console.log(`NEWS の画像: ${images} 件コピー`);
+  for (const f of imageFailures) console.log(`  画像をコピーできませんでした: ${f}`);
+}
+
+// New registrations take the next license number from counters/licenseNo; keep it past the
+// highest copied number so the new site never has to skip through hundreds of taken ids.
+if (collections.includes("users")) {
+  const ids = (await dst.collection("users").select().get()).docs.map((d) => d.id);
+  const highest = Number(nextLicenseNo(ids)) - 1;
+  const counterRef = dst.collection("counters").doc("licenseNo");
+  const last = Number((await counterRef.get()).data()?.last ?? 0);
+  if (highest > last) {
+    await counterRef.set({ last: highest, updatedAt: new Date().toISOString() });
+    console.log(`counters/licenseNo を ${highest} にしました（次の新規登録は ${highest + 1}）。`);
+  }
 }
 
 // ranking_cache from the target's data after the copy (the same calculation the site uses).

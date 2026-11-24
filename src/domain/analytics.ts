@@ -69,7 +69,7 @@ export function computeSeasonAnalytics(params: {
   const sheets = params.scores.filter((d) => inSeason(d) && recordStatus(d) !== "Rejected");
   const byVenue = new Map<
     string,
-    { players: Set<string>; sheets: number; pending: number; points: number }
+    { players: Set<string>; sheets: number; pending: number; approved: number; points: number }
   >();
   const gymsByPlayer = new Map<string, Set<string>>();
   const hours = Array.from({ length: 24 }, () => 0);
@@ -77,11 +77,21 @@ export function computeSeasonAnalytics(params: {
     const userId = str(d.userId ?? d.One_Bouldering_ID);
     const venueId = str(d["会場_ジムID"] ?? d.venueId);
     if (!userId || !venueId) continue;
-    const v = byVenue.get(venueId) ?? { players: new Set(), sheets: 0, pending: 0, points: 0 };
+    const v = byVenue.get(venueId) ?? {
+      players: new Set(),
+      sheets: 0,
+      pending: 0,
+      approved: 0,
+      points: 0,
+    };
     v.players.add(userId);
     v.sheets += 1;
     if (recordStatus(d) === "Pending") v.pending += 1;
-    v.points += Number(d.totalPoints ?? d["合計ポイント"]) || 0;
+    // Average points count approved sheets only (a Pending total is not checked by the gym yet).
+    if (recordStatus(d) === "Approved") {
+      v.approved += 1;
+      v.points += Number(d.totalPoints ?? d["合計ポイント"]) || 0;
+    }
     byVenue.set(venueId, v);
     const g = gymsByPlayer.get(userId) ?? new Set();
     g.add(venueId);
@@ -108,7 +118,7 @@ export function computeSeasonAnalytics(params: {
       sheets: v.sheets,
       players: v.players.size,
       pending: v.pending,
-      avgPoints: v.sheets ? Math.round(v.points / v.sheets) : 0,
+      avgPoints: v.approved ? Math.round(v.points / v.approved) : 0,
     }))
     .sort(
       (a, b) => b.players - a.players || b.sheets - a.sheets || a.name.localeCompare(b.name, "ja"),

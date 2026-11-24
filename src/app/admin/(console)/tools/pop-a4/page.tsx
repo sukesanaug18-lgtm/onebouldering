@@ -32,9 +32,20 @@ function PopSheet({ page, qr, url }: { page: PopPage; qr: string; url: string })
   return (
     <article className="pop-page mx-auto flex h-[297mm] w-[210mm] shrink-0 flex-col overflow-hidden bg-white text-[#1d1d1f] shadow-sm print:shadow-none">
       <header className="bg-[#1d1d1f] px-[14mm] pt-[10mm] pb-[7mm] text-white">
-        <p className="font-display text-[11pt] font-bold tracking-[0.25em]">
-          ONE BOULDERING RANKING {seasonLabel(CURRENT_SEASON_ID)}
-        </p>
+        {/* Ranking official logo (design rule: always on Ranking material; white on dark). */}
+        <div className="flex items-end gap-[4mm]">
+          <Image
+            src="/brand/onebouldering_ranking_logo_white.png"
+            alt="ONE bouldering Ranking"
+            width={490}
+            height={220}
+            className="h-[16mm] w-auto"
+            priority
+          />
+          <p className="pb-[1mm] font-display text-[11pt] font-bold tracking-[0.2em] text-[#FF8C3F]">
+            SEASON {seasonLabel(CURRENT_SEASON_ID)}
+          </p>
+        </div>
         <h2 className="mt-[2mm] text-[28pt] leading-tight font-bold tracking-tight">
           {page.region}エリア 開催スケジュール
         </h2>
@@ -89,7 +100,7 @@ function PopSheet({ page, qr, url }: { page: PopPage; qr: string; url: string })
         ))}
       </section>
 
-      <footer className="flex items-center justify-between gap-[6mm] border-t-[1.5mm] border-[#facc15] px-[14mm] py-[6mm]">
+      <footer className="flex items-center justify-between gap-[6mm] border-t-[1.5mm] border-[#FF8C3F] px-[14mm] py-[6mm]">
         <div>
           <p className="text-[18pt] font-bold">{POP_FOOTER.lead}</p>
           <p className="mt-[1mm] text-[11pt] text-[#515154]">右の QR コードから公式サイトへ</p>

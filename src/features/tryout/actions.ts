@@ -1,7 +1,7 @@
 "use server";
 
 import { randomUUID } from "node:crypto";
-import { updateTag } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { canonicalDivision, UNDECIDED_DIVISION } from "@/domain/division";
 import {
   categoryForGender,
@@ -191,6 +191,9 @@ export async function submitTryout(_prev: TryoutState, formData: FormData): Prom
         console.error("[tryout] ranking rebuild failed", err);
       }
     }
+    // "いまのDivision" on the Tryout page and My Page must show the new Division.
+    revalidatePath("/tryout");
+    revalidatePath("/mypage");
     return { result: outcome };
   } catch (err) {
     if (err instanceof UserError) return { message: err.message };
