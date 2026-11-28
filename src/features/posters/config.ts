@@ -11,19 +11,19 @@ export const POSTER_EVENTS: { key: EventKey; label: string }[] = [
 
 export type Poster = { src: string; width: number; height: number; custom: boolean };
 
-/** Built-in posters. TNFC has none yet (the existing images are result lists with names). */
+/** Built-in posters: the 2027 season posters (03_onebouldering用/04_ロゴ・スポンサー素材). */
 export const DEFAULT_POSTERS: Record<EventKey, Poster | null> = {
-  tnfc: null,
+  tnfc: { src: "/images/posters/tnfc_2027_poster.jpg", width: 1200, height: 1689, custom: false },
   tryout: {
-    src: "/images/posters/tryout_split_poster.jpg",
-    width: 819,
-    height: 1024,
+    src: "/images/posters/tryout_2027_poster.jpg",
+    width: 1200,
+    height: 1700,
     custom: false,
   },
   ranking: {
-    src: "/images/posters/ranking_overview_poster.jpg",
-    width: 2121,
-    height: 3000,
+    src: "/images/posters/ranking_2027_poster.jpg",
+    width: 1200,
+    height: 1500,
     custom: false,
   },
 };
