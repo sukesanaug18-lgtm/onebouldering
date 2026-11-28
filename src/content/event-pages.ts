@@ -46,7 +46,6 @@ export const TNFC_PAGE: EventPageContent = {
   facts: [
     { value: "全国", label: "各地で予選ラウンドを開催" },
     { value: "本戦", label: "予選の上位選手が出場" },
-    { value: "×1.2", unit: "倍", label: "成績は Ranking のポイントに加算（最大）" },
   ],
   overview: [
     "全国の加盟ジムで予選ラウンドを行い、各Divisionの上位選手が本戦に進みます。",

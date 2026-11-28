@@ -11,7 +11,7 @@ export type EventPageContent = {
   lead: string;
   primary: { label: string; href: string };
   secondary?: { label: string; href: string };
-  /** Three key facts shown as large numbers / words. */
+  /** Two or three key facts shown as large numbers / words. */
   facts: { value: string; unit?: string; label: string }[];
   overview: string[];
   categories: { title: string; items: string[]; note?: string }[];

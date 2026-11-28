@@ -115,7 +115,12 @@ export function EventPage({
       {/* Overview */}
       <Section id="overview" aria-labelledby="overview-title" className="scroll-mt-16">
         <SectionHeading id="overview-title" eyebrow="Overview" title="概要" />
-        <div className="mt-10 grid gap-4 sm:grid-cols-3">
+        <div
+          className={cn(
+            "mt-10 grid gap-4",
+            c.facts.length === 2 ? "sm:grid-cols-2" : "sm:grid-cols-3",
+          )}
+        >
           {c.facts.map((f, i) => (
             <FadeIn key={f.label} delay={i * 0.06}>
               <Card accent={c.key} className="h-full">
