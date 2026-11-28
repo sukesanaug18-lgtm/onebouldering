@@ -2,8 +2,8 @@ import "server-only";
 
 /**
  * Firebase settings. Explicit env vars win (.env.local, apphosting.yaml); on App Hosting the
- * platform also provides FIREBASE_CONFIG (projectId, storageBucket) and FIREBASE_WEBAPP_CONFIG
- * (apiKey), so nothing else has to be copied by hand.
+ * platform also provides FIREBASE_CONFIG (projectId, storageBucket) and, at build time only,
+ * FIREBASE_WEBAPP_CONFIG (apiKey; next.config.ts keeps it as FIREBASE_WEBAPP_API_KEY).
  */
 function parse(name: string): Record<string, string> {
   try {
@@ -29,5 +29,10 @@ export function firebaseStorageBucket(): string {
 
 /** Web API key for the Auth REST API (office sign-in). */
 export function firebaseApiKey(): string | undefined {
-  return process.env.FIREBASE_API_KEY || parse("FIREBASE_WEBAPP_CONFIG").apiKey || undefined;
+  return (
+    process.env.FIREBASE_API_KEY ||
+    process.env.FIREBASE_WEBAPP_API_KEY ||
+    parse("FIREBASE_WEBAPP_CONFIG").apiKey ||
+    undefined
+  );
 }
